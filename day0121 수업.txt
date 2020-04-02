@@ -1,0 +1,363 @@
+연습) 평균주문금액 이하의 주문에 대해서 주문번호와 금액을 출력
+
+select avg(saleprice) from orders;
+
+select orderid from orders where saleprice <= (select avg(saleprice) from orders);
+
+연습) 각 고객의 평균주문금액보다 큰 금액의 주문내역에 대해서
+	주문번호, 고객번호, 금액을 출력
+
+select orderid, custid, saleprice
+from orders o1 where saleprice > (select avg(saleprice) from orders o2 
+where o1.custid=o2.custid)
+order by custid;
+
+-1번 고객의 모든 주문내역에 대하여 출력
+select * from orders where custid=1;
+
+-1번 고객의 평균주문금액을 출력
+select avg(saleprice) from orders where custid =1;
+
+연습)대한민국에 거주하는 고객에게 판매한 도서의 총판매액을 구하시오
+
+
+select custid from where address like'%대한민국%';
+//대한민국에 사는 사람
+
+select sum(saleprice) from orders 
+where custid in(select custid from customer where address like'%대한민국%');
+
+연습) 3번 고객이 주문한 도서의 최고금액보다 더 비싼 도서를
+구입한 주문번호의 금액을 출력
+
+-3번 고객이 주문한 주문금액
+select saleprice from orders where custid = 3;
+
+select custid, saleprice from
+orders where saleprice > (select max(saleprice) from orders where custid = 3);
+
+
+연습) 3번 고객이 주문한 도서의 최저금액보다 더 싼 도서를 구입한
+	주문번호와 금액을 출력
+
+select orderid, saleprice from orders
+where saleprice < all (select saleprice from orders where custid=3);
+
+
+연습) 3번 고객이 주문한 도서의 금액보다 더 싼 도서를 구입한
+	주문번호와 구매금액 출력
+
+
+select orderid, saleprice from orders
+where saleprice < any (select saleprice from orders where custid=3);
+
+
+연습) 대한민국에 거주하는 고객의 총주문금액을 출력
+
+select sum(saleprice) from orders o, customer c
+where o.custid= c.custid and
+address like ='%대한민국%';
+
+select sum(saleprice) from orders
+where custid in(select custid from customer 
+where adderss like '%대한민국%');
+
+select sum(saleprice) from orders o
+where exists (select * from customer c where o.custid = c.custid and
+	adderss like '%대한민국%');
+
+
+_______________________________________________________________________________________
+
+데이터베이스 명령어
+
+1.DDL
+
+2.DCL
+
+3.DML(*)
+-데이터를 추가, 수정, 삭제, 검색 insert update delete select
+
+연습 1) 다음과 같은 고객을 추가해봅니다.
+	고객아이디 7번
+	이름 서동욱
+	주소 대학민국 서울
+	전화는 010-9000-0001
+
+insert into customer(custid,name,address,phone) 
+values(20,'서동욱','대한민국 서울','010-9000-0001');
+____________________________
+
+자료의 수정
+update 테이블명 set 칼럼명=값 where 조건식;
+update 테이블명 set 컬럼명1=값1, 컬럼명2=값 2 where 조건식;
+
+연습) 7번 고객의 주소를 안양
+	010 2232 2317 로 수정한다
+
+update customer set phone='010-1234-1234'
+where custid =12;
+
+연습) 도토리부서와 자바잡아 팀의 급여와 수당을 10% 인상하도록 합니다.
+
+update emp set sal=sal+sal*0.1, comm=comm+comm*0.1 
+where dno in ( select dno from dept where dname in('도토리','자바잡아');
+
+
+
+
+
+연습) 부하직원이 1명이라도 있는 모든 관리자의 급여를
+	10% 삭감하도록 합니다.
+
+update emp m set sal=sal*0.9
+where exists (select * from emp e where m.eno=e.mgr);
+
+select eno from emp m
+where exists (select * from emp e where m.eno=e.mgr);
+
+
+연습) 주영현님의 부하직원들의 수당을 50% 인상하도록 한다.
+
+update emp set comm= comm*1.5 
+where mgr = ( select eno from emp where ename='주영현' );
+
+
+
+_________________________________________________________________________
+
+연습) 모든 직원들의 급여와 수당을 부서별 평균급여와 
+	수당의 10%만큼 인상하도록 하세요
+
+select avg(sal) from emp
+select avg(comm) from emp
+
+update emp e1 
+set sal=sal+(select avg(sal)*0.1 from emp e2 where e1.dno=e2.dno ), 
+comm=comm+(select avg(comm)*0.1 from emp e3 where e1.dno=e3.dno);
+
+
+
+<서브쿼리의 실행결과가 여러개의 칼럼일때 한꺼번에 수정할 수 있다>
+<여러개의 컬럼을 한꺼번에 수정하고 싶어요>
+update emp set(sal,comm)=();
+update emp set 컬럼1= 값1, 컬럼2=값2
+update emp set(컬럼1,컬럼2)=(값1,값2);	===>이경우에 값에는 
+						서브쿼리만
+						올 수 있다.
+
+__________________________________________________________________________________
+
+<자료의 삭제>
+delete 테이블명 where 조건식
+
+
+연습) 출판사별 평균 도서금액 이하의 도서를 삭제하라
+
+select avg(price) from book;
+
+delete book10 b1 where price <= (select avg(price) from book10 b2 
+where b1.publisher = b2.publisher);
+
+______________________________________________________________________________________
+
+<<실험을 위하여 400번 부서의 관리자인 이근희의 입사일을
+	오늘 날짜로 수정한다.>>
+
+update emp set hiredate = sysdate where ename = '이근희';
+
+연습) 모든 부하직원들보다 입사일이 늦은 관리자이름 검색
+
+- 관리자 번호별 가장최근의 입사일
+select mgr, max(hiredate) hiredate from emp group by mgr;   ==> A
+ ==> emp와 A를 조인하여 사원번호가 A의 mgr이고 입사일이 A의 hirdate보다 늦은 사원검색
+
+- select ename from emp e,() a
+ where e.eno = a.mgr and
+ e.hiredate > a.hiredate;
+
+select ename from emp e,(select mgr, max(hiredate) hiredate 
+from emp group by mgr) a
+where e.eno = a.mgr and
+e.hiredate > a.hiredate;
+
+
+
+연습) 관리자보다 입사일이 빠른 사원을 삭제한다.
+
+delete emp e where hirdate <(select hirdate 
+from emp m where e.mgr = m.eno);
+
+
+
+
+연습) 모든 부하직원보다 입사일이 늦은 관리자를 삭제합니다.
+
+delete emp m where
+hirdate > all (select hiredate from emp e where m.eno=e.mgr);
+
+===> 이것은 잘못된 쿼리이다. 올바르게 작동 X
+
+delete emp where eno=( select eno from emp e,(select mgr, max(hiredate) hiredate 
+from emp group by mgr) a
+where e.eno = a.mgr and
+e.hiredate > a.hiredate )
+
+
+
+
+____________________________________________________________________________________________
+
+<한번에 여러개의 칼럼을 수정하고 싶을때>
+고객번호가 20번의 주소와 전화번호를 한번에 수정해봅시다
+
+update customer set   (address,phone)=
+('대만','010-7777-7777') where custid =20;
+
+update customer set address='대만', phone='010-7777-7777'
+where custid=20;
+
+
+________________________________________________________________________________________________
+
+예를 들어 200번 부서에 근무하는 직원들의 번호 이름 급여 부서번호를
+출력하는 경우가 빈번하다고 가정
+
+select eno, ename, sal, dno from emp where dno = 200;
+
+위의 쿼리를 동작하는 view를 만든다.
+
+create view view이름 as select~~~~~
+
+
+연습) 200번 부서에 근무하는 직원들의 번호, 이름 급여 부서번호를 검색하는 
+	"emp200" view를 생성해보자
+
+create view emp200 as select eno,ename,sal,dno from emp where dno=200;
+
+이제부터는 200번 부서에 근무하는 직원들의 번호 이름 급여 부서번호를 
+검색하기 위해서 emp200을 이용할수 있다.
+
+insert into orders values( 14, 1, 8, 13000, sysdate);
+insert into orders values( 15, 5, 7, 20000, sysdate);
+insert into orders values( 16, 1, 6, 6000, sysdate);
+insert into orders values( 17, 1, 5, 8000, sysdate);
+insert into orders values( 18, 1, 8, 13000, sysdate);
+
+
+
+연습) 오늘 주문한 정보를 다음과 같은 칼럼으로 출력하는
+	view를 생성하고 결과를 확인하세요
+(주문번호 고객명 도서명 출판사 도서가격 구매가격을 주문번호 순)으로 출력
+
+
+create view v_today
+as
+select orderid,name,bookname,publisher ,price,saleprice
+from book b,customer c, orders o
+where b.bookid = o.bookid and
+c.custid = o.custid and
+to_char(orderdate,'yyyy/mm/dd')=to_char(sysdate,'yyyy/mm/dd')
+order by orderid;
+
+
+
+연습) 오늘 날짜에 가장 구매금액이 가장 높은 상위 2명 고객의 정보를 출력하는
+	view를 생성하고 결과를 확인합니다.
+
+-orders테이블로 부터 고객id별 주문총금액을 내림차순
+
+select custid, sum(saleprice) from orders
+group by custid
+order by sum(saleprice) desc;	==>A
+
+-A의 결과에 행번호를 붙여 행번호가 2 이하인 custid를 출력
+
+select custid from ()
+where rownum <=2;
+
+
+
+select custid from (select custid, sum(saleprice) from orders
+group by custid
+order by sum(saleprice) desc)
+where rownum <=2;		==>B
+
+
+customer 테이블로부터 custid에 B에 해당하는 고객의정보를 출력
+
+select * from customer where
+custid in ();
+
+
+select * from customer where
+custid in (select custid from (select custid, sum(saleprice) from orders
+group by custid
+order by sum(saleprice) desc)
+where rownum <=2);		==> C
+
+
+C의 결과를 view로 생성한다
+create view today_top_customer 
+as
+select * from customer where
+custid in (select custid from (select custid, sum(saleprice) 
+from orders
+where to_char(orderdate,'yyyy/mm/dd') = to_char(sysdate,'yyyy/mm/dd')
+group by custid
+order by sum(saleprice) desc)
+where rownum <=2);
+
+
+
+
+
+연습) 오늘날짜에 구매건수가 가장 높은 도서의 정보를 출력하는
+	뷰를 생성하고 결과를 확인한다.
+
+-오늘 날짜에 판매된 도서중에 도서별 판매건수를 출력
+
+select bookid,count(*) from orders
+where to_char(orderdate,'yyyy/mm/dd') = to_char(sysdate,'yyyy/mm/dd')
+group by bookid
+order by count(*) desc;		==> A
+
+
+- A의 결과에 행번호를 붙여 1보다 적거나 같은 도서번호를 출력
+
+select bookid from(select bookid,count(*) from orders
+where to_char(orderdate,'yyyy/mm/dd') = to_char(sysdate,'yyyy/mm/dd')
+group by bookid
+order by count(*) desc)
+where rownum <= 5;		==> B
+
+
+-book테이블로 부터 도서번호가 B에 해당하는 도서의 정보를 출력
+
+select * from book
+	where bookid in (select bookid from(select bookid,count(*) from orders
+where to_char(orderdate,'yyyy/mm/dd') = to_char(sysdate,'yyyy/mm/dd')
+group by bookid
+order by count(*) desc)
+where rownum <= 5);		==> C
+
+
+-C의 결과로 view를 생성한다
+
+create view today_top_book
+as
+select * from book
+	where bookid in (select bookid from(select bookid,count(*) from orders
+where to_char(orderdate,'yyyy/mm/dd') = to_char(sysdate,'yyyy/mm/dd')
+group by bookid
+order by count(*) desc)
+where rownum <= 5);
+
+
+
+
+
+
+
+
+

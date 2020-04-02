@@ -1,0 +1,381 @@
+
+질문) 세미콜론(;)이 필요한 기준이 있는가?
+==> 자바와 같은 개념으로 생각하면 된다
+	문장끝에 표시합니다.
+	
+명령어 끝에 표시.
+
+
+
+
+
+연습) 전체도서의 판매이익금을 계산하여 출력하는 프로시절르 생성
+도서의 가격이 3만원 이상이면 이익이 10%이고
+도서의 가격이 3만원 미만이면 이익이 5%가 이익금이다
+
+set serveroutput on;
+
+create or replace procedure interest
+as
+     total numeric;
+     price numeric;
+     cursor c1 is select saleprice from orders;
+begin
+     total := 0;
+     open c1;
+     loop
+	fetch c1 into price;	
+	exit when c1%NOTFOUND;
+	if price >= 30000 then
+	   total := total + price*0.1;
+     else
+	total := total + price*0.05;
+     end if;
+     end loop;
+     dbms_output.put_line('전체이익금= ' || total);
+     close c1;
+end;
+/
+
+
+연습) 출판사명을 매개변수로 전달받아
+	해당출판사의 모든 도서명과 가격을 출력하는
+	프로시저를 생성하고 호출해봅니다.
+
+set serveroutput on;
+create or replace procedure print_pub(
+pub varchar2
+)
+as
+bookname varchar2(30);
+price numeric;
+cursor c1 is select bookname, price from book
+where publisher like pub;
+begin
+open c1;
+loop
+fetch c1 into bookname, price;
+exit when c1%NOTFOUND;
+dbms_output.put_line(bookname || price);
+end loop;
+end;
+/
+
+연습) 부서명을 매개변수로 전달받아 해당부서에 근무하는 
+	모든 직원들의 이름과, 급여를 출력하고
+	평균급여를 출력하는 프로시저를 생성하고
+	호출해봅니다 
+
+set serveroutput on;
+
+create or replace procedure emp_dept(
+p_dname varchar2
+)
+as
+ename varchar2(20);
+sal numeric;
+avg_sal numeric;
+cursor c1 is select ename, sal from emp e, dept d
+where e.dno=d.dno and dname = p_dname;
+cursor c2 is select avg(sal) from emp e, dept d
+where e.dno=d.dno and dname = p_dname;
+begin
+open c1;
+open c2;
+fetch c2 into avg_sal;
+loop
+fetch c1 into ename, sal;
+exit when c1%NOTFOUND;
+dbms_output.put_line(ename || sal);
+end loop;
+dbms_output.put_line('평균급여: '||avg_sal);
+close c1;
+close c2;
+end;
+/
+
+
+_____________________________________________________________________________
+
+트리거: 데이터의 변경이 일어날때 자동으로 같이 실행되는 프로시저를 	말한다
+
+트리거의 동작 시점: 
+
+실습을 위하여 book_log 테이블을 생성
+
+
+create table book_log as
+select * from book;
+
+연습) book 테이블에 레코드가 추가되면 자동으로 동작하여
+	book_log에 행을 자동으로 추가하는 트리거를 만들고 
+	실험해본다
+
+create or replace trigger insert_book_log
+after insert on book for each row
+declare
+begin
+insert into book_log values(:new.bookid,:new.bookname,:new.publisher,:new.price);
+end;
+/
+
+
+:new	==>insert가 일어난 행자체
+	      update가 된 후의 행자체
+
+
+:old	==>update가 되기전의 행 자체
+	      delete 가 된 행 자체
+
+
+연습) book테이블에 레코드가 삭제되면 자동으로 동작하여
+       book_log에서 해당도서를 삭제하는 트리거를 생성하고 확인한다.
+
+create or replace trigger trg_del_book
+after delete on book for each row
+declare
+begin
+delete book_log where bookid= :old.bookid;
+end;
+/
+
+연습) book테이블에 레코드가 수정되면 자동으로 동작하여 
+book_log 의 해당도서의 정보도 수정되도록 트리거를 생성하고 확인
+
+create or replace trigger trg_update_book
+after update on book for each row
+declare
+begin
+update book_log set bookname=:new.bookname,publisher=:new.publisher,price=:new.price where bookid= :new.bookid;
+dbms_output.put_line('book_log의 정보도 수정되었습니다');
+end;
+/
+
+_____________________________________________________________________________
+
+create table 상품(
+상품번호 number primary key,
+상품명 varchar2(30),
+단가 number,
+재고수량 number
+);
+
+insert into 상품 values(1,'딸기',8000,0);
+insert into 상품 values(2,'복숭아',15000,0);
+insert into 상품 values(3,'포도',9000,0);
+
+
+
+
+create table 입고(
+입고번호 number primary key,
+상품번호 number references 상품(상품번호),
+입고수량 number,
+입고날짜 date
+);
+
+
+
+연습) 입고 테이블에 레코드가 추가되면 입고수량만큼 해당 상품의 재고	수량을 증가시키는 트리거를 생성하고 결과를 확인합니다.
+
+
+create or replace trigger trg_insert_상품
+after insert on 입고 for each row
+declare 
+begin
+update 상품 set 재고수량 = 재고수량+ :new.입고수량 
+where 상품번호 = :new.상품번호;
+dbms_output.put_line('재고수량도 증가되었습니다');
+end;
+/
+
+
+column 상품번호 format 9999;
+column 상품명 format a10;
+column 단가 format 999,999;
+column 재고수량 format 9999;
+
+column 입고번호 format 9999;
+column 입고수량 format 9999;
+column 입고일 format a10;
+
+insert into 입고 values(1,2,400,sysdate);
+insert into 입고 values(2,3,300,sysdate);
+insert into 입고 values(3,1,200,sysdate);
+
+연습) 입고테이블에 레코드가 삭제되면 해당 상품의 수량을
+	수정하는 트리거를 생성하고
+	결과를 확인해보자
+
+create or replace trigger trg_del_입고
+after delete on 입고 for each row
+declare
+begin
+update 상품 set 재고수량 =재고수량- :old.입고수량
+where 상품번호 = :old.상품번호;
+end;
+/
+
+
+연습) 입고테이블에 레코드가 수정되면
+	해당 상품의 수정된 수량만큼
+	상품테이블의 재고수량에 반영하는 트리거를 생성하고
+	결과를 확인해보자.
+
+create or replace trigger trg_update_입고
+after update on 입고 for each row
+declare
+begin
+update 상품 set 재고수량=재고수량-(:old.입고수량-:new.입고수량)
+where 상품번호= :new.상품번호;
+end;
+/
+
+_______________________________________________________________________
+
+select avg(sal) from emp;
+
+위의 sql문장의 avg 같은
+
+
+
+
+
+
+
+
+연습) 도서금액을 매개변수로 전달받아 해당 도서의 
+	판매이익금을 반환하는 함수를 만들고
+	 호출해보자
+	( 도서가격이 3만원 이상이면 이익금이 10%
+	  도서가격이 3만원 미만이면 이익금이 5%)
+
+create or replace function fnc_interest(
+price number
+)
+return int
+is
+	myInterest number;
+begin
+	if price >= 30000 then
+	myInterest := price*0.1;
+	else
+	myInterest := price*0.05;
+	end if;
+	return myInterest;
+end;
+/
+
+
+연습) 8-1 고객의 주문 총액을 계산하여 2만원이상이면 우수
+	2만원 미만이면 보통을 반환하는 함수 Grade()를 작성
+	Grade()를 호출하면 고객의 이름과 국내 국외 거주 여부를 
+	출력하는 sql문도 작성하시오
+
+create or replace function Grade(
+cid number
+)
+return varchar2
+is
+	r varchar2(30);
+	total number;
+begin
+	select sum(saleprice) into total from orders 
+	where custid = cid;
+	if total >= 20000 then
+	r='우수';
+	else
+	r='보통';
+	end if;
+	return r;
+end;
+/
+
+
+
+
+
+
+
+
+select name, Grade(custid) from customer;
+
+
+
+
+
+
+연습) 8-2 고객의 주소를 이용하여 국내에 거주하면 국내거주
+	해외에 거주하면 국외거주를 반환하는 함수 Domestic()을
+	작성하시오
+	Domestic()을 호출하여 고객의 이름과 국내 국외 거주 여부를 		출력하는 sql문도 작성하시오.
+
+create or replace function Domestic(
+addr varchar2
+)
+return varchar2
+is
+	r varchar2(20);
+begin
+	r :='국외거주';
+	if addr like '대한민국%' then
+		r := '국내거주';
+	end if;	
+	return r;
+end;
+/
+
+
+select name,Domestic(address) from customer;
+
+
+
+연습) 8-3 (2)번에서 작성한 Domestic()을 호출하여
+	국내거주 고객의 판매총액과 
+	국외거주 고객의 판매 총액을 출력하는 sql문을 작성하시오.
+
+
+select name,Grade(custid),Domestic(address) from customer;
+
+select name,(select nvl(sum(saleprice),0) from orders o where o.custid=c.custid),Domestic(address) from customer c;
+
+column total
+
+select Domestic(address),sum(saleprice)
+from customer c, orders o
+where c.custid=o.custid
+group by Domestic(address);
+
+
+
+create or replace 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

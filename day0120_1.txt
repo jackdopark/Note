@@ -1,0 +1,96 @@
+column no format 9999;
+column title format a10;
+column writer format a10;
+column pwd format a10;
+column content format a15;
+column redate format a15;
+column hit format 9999;
+
+______________________________________________________________________________
+
+서브쿼리(subquery), 부속질의, 하위질의
+===> sql문장안에 포함되는 또다른 sql문장을 말한다.
+
+서브쿼리는 select절 from절 where절에 올 수 있다.
+
+
+<<다중행연산자>>
+
+서브쿼리가 where절에 올때
+서브쿼리의 건수가 여러건일때 사용하는 연산자들이다.
+
+ in, any(some), all, exist
+ 
+ select * from book 
+	where bookid = (select bookid from orders);
+2행에 오류:
+ORA-01427: 단일 행 하위 질의에 2개 이상의 행이 리턴되었습니다.
+
+이렇게 하면 오류가 난다 .
+ 
+= 연산자를 서브쿼리에 적용하려면 그결과가 1건일때만 사용할 수 있다.
+
+만약 서브쿼리의 건수가 여러건이라면 "=" 대신에 "in연산자"를 사용해야한다.
+
+
+select * from book
+	where price > (select avg(price) from book group by publisher);
+2행에 오류:
+ORA-01427: 단일 행 하위 질의에 2개 이상의 행이 리턴되었습니다.
+
+서브쿼리에 크기 비교연산자(>,>=,<=,<)를 사용하려면 서브쿼리의 건수가
+한건일때만 사용할 수 있다.
+
+서브쿼리의 건수가 여러건일때
+	크기비교연산자를 꼭 사용해야한다면
+	다중행 연산자인 any(some), all과 같이 사용해야한다
+select * from book
+	where price > any (select avg(price) from book group by publisher);
+
+==> any(some) : 서브쿼리의 건수중에 어떤 것이라도 조건을 만족한다면.
+       
+       all : 서브쿼리의 건수 모두가 조건을 만족한다면.
+       
+
+
+select * from book
+	where price > all (select avg(price) from book group by publisher);       
+
+
+_____________________________________________________________________________________
+
+
+고객별 총구매금액을 출력
+
+select custid,(select name from customer c where c.custid = o.custid) name 
+sum(saleprice) from orders o group by custid;
+
+_____________________________________________________________________________________
+
+1) 부서별 사원의 수를 출력(select 절에 서브쿼리를 이용하여 부서명을 출력)
+
+select dno,(select dname from dept d where d.dno = e.dno) dname,
+count(*) from emp e group by dno;
+
+2) 사장이 있는 부서(총무부)를 제외하고 모든 부서별 평균급여보다 
+    더 많은 급여를 받는 사원의 정보를 출력
+
+select avg(sal) from emp group by dno;
+
+select * from emp where sal > all (select avg(sal) from emp 
+where dno != 500 group by dno);
+
+3) 총무부를 제회하고
+    부서별 평균급여의 최고값보다 더 많은 급여를 받는 직원의 정보를 출력
+
+select * from emp where sal > 
+select max(avg(sal)) from emp where dno != 500 group by dno;
+
+4) 구매를 한 고객의 정보를 출력하시오(서브쿼리 이용)
+
+select 
+
+
+____________________________________________________________________________________
+
+

@@ -1,0 +1,28 @@
+모든 사원의 목록을 출력하는 프로그램을 작성
+
+사원번호 사원명 부서명 직급 관리자명 급여 수당 실수령액 근무지 입사일
+
+select e.eno,e.ename ename,dname,e.job,m.ename mname, e.sal, e.comm,
+e.sal+e.comm total, dloc,e.hiredate
+from emp e, emp m,dept d
+where e.mgr = e.eno and
+d.dno = e.dno
+
+
+
+create view EmpView as
+select e.eno,e.ename ename,dname,e.job,m.ename mname,e.sal,e.comm,
+e.sal+e.comm total, dloc,e.hiredate
+from emp e, emp m,dept d
+where e.mgr = e.eno and
+d.dno = e.dno;
+
+
+
+STS 툴이 정확히 무엇인가?
+
+Spring Tool Suite
+(스프링 개발을 쉽게하기 위한 도구)
+
+==> Spring Boot :: 스프링 개발을 위한 환경설정을 더 쉽게, 빠르게
+		 할 수 있는 환경을 제공해준다.

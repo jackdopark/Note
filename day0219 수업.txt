@@ -1,0 +1,32 @@
+-스프링-
+
+<been>: 객체를 사용할때 쓴다. (스프링 1pdf-17쪽)
+____________________________________________________________________________
+
+다운로드 받은 spring폴더의 lib을 프로젝트에 추가하기
+프로젝트 오른쪽 마우스에서 맨밑에 Properties를 누르고
+--java Build Path 클릭후 
+--Libraries 에서 Classpath 선택 후 Add External JARs클릭
+-- 다운로드 받은 lib 파일의 모든 jar를 선택후 적용한다
+____________________________________________________________________________
+
+이클립스에서 help를 누른뒤 맨 밑에서 4번째
+install new Software를 선택하여 
+밑의 주소를 입력한다
+http://dist.springframework.org/release/IDE
+Core을 선택
+
+____________________________________________________________________________
+<bean id="sm" class="com.bit.exam02.SystemMonitor">
+		<property name="periodTime" value="15"/>
+		<property name="sender" ref="sender"/>
+</bean>
+는 setter를 쓸때 프로퍼티를 사용한다.
+
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+<bean id="sm" class="com.bit.exam04.SystemMonitor">
+		<constructor-arg value="30"/>
+		<constructor-arg ref="smsSender"/>
+</bean>
+는 setter getter를 모두 사용할때 즉 컨스트럭트 유싱 필드를 적용할때
+컨스트럭털 를 사용한다.

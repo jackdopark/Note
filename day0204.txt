@@ -1,0 +1,201 @@
+
+
+
+
+**축구 쇼핑몰을 만드려고합니다
+
+상품(상품번호* 상품명 단가 수량 상품사진 상세설명)
+
+
+c##bit1234가 아래의 테이블을 만들고
+상품등록을 위한 html과 jsp를 각각 만들어 봅니다.
+
+create table goods(no number primary key,item varchar2(15),price number,qty number,fname varchar2(20),detail varchar2(20));
+
+
+column no format 999,999;
+column item format a15;
+column price format 999,999;
+column qty format 999,999;
+column fname format a15;
+column detail format a20;
+
+http://localhost:8099/day0204/goods.html
+
+
+_____________________________________________________________________________________
+
+<form action="insertGoodsOk.jsp" method="post" enctype="multipart/form-data">
+
+enctype="multipart/form-data">
+사진등록하면 엔코딩타입입력
+
+<input type="file" name="fname">
+사진
+
+
+
+String path = request.getRealPath("upload");
+path에 저장
+request.getRealPath("upload");
+실제 경로를 가져온다
+
+
+MultipartRequest multi = new MultipartRequest(request, path, "enc-kr");
+이 객체를 생성하는 순간 파일은 생성된다.
+
+
+//String fname = multi.getParameter("fname");
+String fname = multi.getOriginalFileName("fname");
+파일은 겟파라미터가 아니라 오리지널파일네임을 한다.
+
+
+
+_____________________________________________________________________________________
+
+jsp
+java Server Page
+
+==> 자바언어로 서버의 문서를 만들기 위한 기술
+	자바언어로 웹문서(html)을 만들기 위한 기술
+
+==> jsp이전에 원래는 자바언어로 웹서버의 문서를 만드는 기술이
+	"서블릿"이라는 것이 있었습니다.
+	서블릿으로 웹문서를 만드는 방법은 번거럽고 어려워서
+	보다 쉽게 웹문서를 만들기 위하여 jsp를 나중에
+	발표했다.
+
+	초기에 jsp는 동적인 html만들기가 서블릿에 비해 
+	쉬워서 많이 인기가 있었다.
+	그러나 시간이 지남에 따라 
+	프로젝트의 규모가 커지고 사용자의 요구가
+	복잡해진다
+	또 사용자는 빈번한 수정을 요구한다.
+	
+	이러한 경우에 jsp만으로 즉 하나의 jsp에 사용자의 요청,
+	요청을 처리하기 위한 자바문법, 또 결과를 보여주기 위한 html이
+	섞여 있어 협업이나, 유지보수 하기에 어려움이 있게 된다.
+	
+	많은 개발자들이 협업이나 유지보수에 유용한
+	자신만의 개발 패턴을 만들게 된다
+	
+	MVC패턴이 일반적으로 널리 쓰인다
+	M : Model	일처리를 위한 자바클래스들
+	V : View		사용자 화면에 보여줄 html
+	C : Controller	사용자가 어떤 서비스를 원하는지 파악
+
+	이때 이 Controller의 역할을
+	일반적으로 서블릿이 담당하게 된다.
+
+	결국 현재는 서블릿이 중요해 졌다.
+
+_____________________________________________________________________________________
+
+연습) 웹 브라우저에 "Hello"라고 출력하는
+	서블릿과 jsp를 각각 만들어보자.
+
+@WebServlet("/Hello.do")
+http://localhost:8099/day0204/Hello.do
+이와 같이 뒤에 /Hello.do를 치면 Hello화면이 나온다.
+
+
+C:\jspTest\.metadata\.plugins\org.eclipse.wst.server.core\tmp0\work\Catalina\localhost\day0204\org\apache\jsp
+서블릿이 안될때 이 안에 있는 문서들을 다 지워주면 된다.
+
+_____________________________________________________________________________________
+
+<<jsp의 구성요소>>
+
+1. 지시자	: <%@     %>
+	- page 지시자 : <%@page     %>
+	  jsp문서를 실행하기전에 선행처리 되어야 할 내용을 설정한다
+
+	- include 지시자 : <%@include     %>
+	  다른 jsp의 내용을 현재 문서에 포함시키는 기능
+
+	- taglib 지시자: <%@taglib      %>
+	  자바문법을 대신하는 태그를 설정하는 기능
+
+2. 스크립트릿 : <%      %>
+	- 온갖종류의 (선택문,반복문,변수처리 등) 자바문법을 사용하기
+		위한 기능이다.
+
+
+
+
+3. 표현식 : <%=	%>
+	- 변수나 메소드 호출결과를 출력하기 위해 사용하는 기능
+	
+
+
+
+
+
+4. 선언문 : <%!	%>
+	- 생성되는 서블릿의 멤버변수, 맴버메소드를 정의하기
+		위한 기능이다
+
+
+
+
+
+
+
+5. 액션태그
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+_____________________________________________________________________________________
+
+<table border="1">
+	<tr>
+		<%
+			for(int i=1;i<=31;i++){
+		
+		%>
+			<td><%=i %></td>
+		<%
+			if(i % 7 == 0){
+				%>
+			
+			</tr>
+			<tr>
+			<%
+			}
+		}
+		%>	
+	</tr>
+
+
+</table>
+
+
+_____________________________________________________________________________________
+
+
+
+

@@ -1,0 +1,4 @@
+column no format 9999;
+column title format a10;
+column writer format a10;
+colulmn 

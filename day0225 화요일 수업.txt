@@ -1,0 +1,74 @@
+https://spring.io/tools
+
+src/main/resources 에서 application.properties에 
+다운받은 어플리케이션설정 을 복사해서 붙여준다.
+(위에 #database부터 맨 끝까지 다 복사)             
+
+porm.xml파일 dependency맨 밑에
+즉 </dependencies> 이거 바로 위에 드랍박스에서
+다운받은 "<!-- jsp를 사용하기 위한 메이븐 설정 -->"
+이 파일을 복사에서 붙여넣는다
+
+________________________________________________________________________________
+
+
+
+모든 사원의 목록을 출력하는 프로그램을 작성
+
+사원번호 사원명 부서명 직급 관리자명 급여 수당 실수령액 근무지 입사일
+
+select e.eno,e.ename ename,dname,e.job,m.ename mname, e.sal, e.comm,e.sal+e.comm total, dloc,e.hiredate from emp e, emp m,dept d where e.mgr = m.eno and d.dno = e.dno;
+
+select e.eno, e.ename ename, dname, e.job, m.ename mname, e.sal, e.comm, e.sal+e.comm total, dloc, e.hiredate
+from emp e, emp m, dept d where e.mgr = m.eno and d.dno = e.dno;     
+
+
+
+
+create view EmpView as
+select e.eno,e.ename ename,dname,e.job,m.ename mname,e.sal,e.comm,e.sal+e.comm total,dloc,e.hiredate from emp e, emp m,dept d where e.mgr = m.eno and d.dno = e.dno;
+
+
+
+STS 툴이 정확히 무엇인가?
+
+Spring Tool Suite
+(스프링 개발을 쉽게하기 위한 도구)
+
+==> Spring Boot :: 스프링 개발을 위한 환경설정을 더 쉽게, 빠르게
+		 할 수 있는 환경을 제공해준다.
+
+
+
+________________________________________________________________________________
+
+서비스 명세서
+	서비스명, 컨트롤러 클래스명,  dao명, 메소드명, view이름
+	모델명
+클래스 명세서
+	
+
+
+3월 10일 발표
+
+==============================================
+
+
+Spring MVC 패턴의 프로젝트 발표
+
+4월 29일 수요일에 발표
+
+
+5/27--> 최종발표
+최종프로젝트에 String Boot환경
+	mybatis Or JPA
+	jquery or Vue.js
+	AJAX
+	빅데이터 컴퓨팅 (데이터 수집,분석,처리,시각화)
+				파이썬 , R
+	
+					
+	
+
+
+

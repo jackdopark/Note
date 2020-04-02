@@ -1,0 +1,144 @@
+<< jdbc 연결 프로그래밍 절차 >>
+
+1. jdbc 드라이버를 메모리로 로드한다.
+	Class.forname("oracle.jdbc.driver.OracleDriver");
+	
+2. dbServer에 연결한다.
+	DriverManager.getConnection(db서버주소,사용자명,암호);
+	Connection conn = 
+		DriverManager.getConnection("jdbc:oracle:thin:@ip주소:포트번호:서비스명",사용자명,암호);
+
+3. sql명령을 수행하기 위한 Statement 혹은 PreparedStatement 객체를 생성한다.
+	Statement stmt = conn.createStatment();
+	
+	PreparedStatement는 어떨때 사용하나요???
+	예를 들어 새로운 부서를 등록하는 경우를 생각 보자.
+	추가할 부서의 정보를 매개변수 dno, dname, dloc으로 전달받아서 
+	sql을 생성하는 경우 Statement를 표현하려면
+	
+	String sql = "insert into dept valeus("+dno+", '"+dname+"', '"+dloc+"')";
+	이와 같이 일일이 +연산자로 연결하는 것은 번거로와요.
+	이러한 경우 PreparedStatement를 이용하면
+	sql문장을 좀더 간결하게 표현할 수 있어요.
+	sql에 표현되는 변수의 처리를 ?로 대신처리하고 
+	실행하기 전에 ?에 값을 설정 해 줘요.
+	
+	String sql = "insert into dept values(?,?,?)"
+	PreparedStatement pstmt = conn.preParedStatement(sql);
+	pstmt.setInt(1, dno);
+	pstmt.setInt(2, dname);
+	pstmt.setInt(3, dloc);
+	
+	===> ?의 수와 값을 설정하는 수가 일치해야 합니다.
+	===> ?위 위가 값을 설정하는 위치도 일치해야 합니다.
+	
+	
+4. sql명령을 실행한다.
+	두가지 메소드를 이용합니다.
+	
+	ResultSet rs  = stmt.executeQuery(sql)
+		==> sql명령어가 select일때 사용합니다.
+		==> 검색한 결과를 ResultSet으로 반환해요.
+	
+	
+	int re = stmt.executeUpdate(sql);	
+		==> sql명령어가 insert, update, delete처럼
+				데이터베이스 변동이 있는 명령이 실행할 때 사용해요.
+		==> 성공적으로 sql명령을 실행한 레코드의 수를 반환해요.
+		
+		stmt.executeUpdate(sql)가 
+			sql에 성공하면 
+			언제라도 1인가요???
+			
+		if( re == 1){		
+		}
+		
+		
+		if( re > 0){		
+		}
+	
+_______________________________________________________________________________________________________________
+
+
+
+	
+			
+
+
+
+_______________________________________________________________________________________________________________
+
+<< 상태 유지 기법 >>
+
+jsp의 내장객체인
+session을 이용합니다.
+
+
+
+_______________________________________________________________________________________________________________
+
+모든 부서목록을 출력하는 프로그램을 작성합니다.
+부서등록을 위한 기능을 추가합니다.
+부서목록과 부서등록을 위한 페이지를 하나의 페이지에서 처리합니다.
+
+
+
+
+request.getMethod().equals("POST")
+==> 왜 대문자인가
+
+
+_______________________________________________________________________________________________________________
+
+
+고객을 등록하고 고객목록을 출력하는 기능을 하나의 jsp에서 처리되도록
+웹어플리케이션을 작성하세요
+
+
+
+________________________________________________________________________________________________________________
+
+
+
+
+
+
+예를들어
+dept(dno*,dname,dloc)을
+emp(eno*,ename,dno**)가 서로 관계에 있고
+emp테이블의 dno는 dept테이블의 dno를 참조하고 있을때
+
+만약 200번 부서번에 사원이 존재하고 있는데 부서 테이블에서 200번 부서를
+
+
+
+
+
+
+____________________________________________________________________________________________________________---
+
+게시판	board
+
+
+글번호	no		pk
+제목	title
+작성자	writer
+암호	pwd
+글 내용	content
+등록일	regdate
+조회수	hit
+
+
+create table board(no number primary key, title varchar2(50), writer varchar2(20),
+		pwd varchar2(20), content varchar(3000),
+		regdate date, hit number);
+
+
+// 글내용은 <textarea rows="10" cols="80"></textarea> 를 이용합니다.
+
+
+
+
+
+
+

@@ -1,0 +1,538 @@
+** view에 대해서 아는대로 설명하세요
+
+실제로 존재하지 않는 가상의 테이블을 말한다
+
+view를 생성하는 방법
+create view view이름 as select~~;
+
+
+연습) 300번 부서에 근무하는 직원들의
+	사원번호 이름 급여 부서번호를
+	검색하는 view를 생성하고 결과를 
+	확인한다.
+
+create view emp300
+as
+select eno, ename, sal, dno from emp where dno=300; 
+
+select eno, ename, sal, dno from emp where dno=300; 
+
+
+<<view를 통해서 insert가 가능할까?>>
+
+insert into emp300 values(2000,'문재인',100,300);
+==>뷰를 통해서 레코드를 추가할 수 있어요
+==> 실제로는 모테이블인 emp에 추가되었다
+==> 뷰는 모테이블인 emp이 일부 컬럼만으로 구성되어 
+	있으므로 view를 통해 insert를 하려면
+	나머지 모테이블의 칼럼들은 
+	null을 허용해야한다
+	단 모테이블의 칼럼중에 null을 허용하지 않은
+	컬럼이 있다면 view를 통해서 레코드를 추가할
+	수 없다.
+
+<<view의 조건에 맞지않는 레코드를 추가할 수 있을까?>>
+
+insert into emp300 values(3000,'안철수',100,200);
+
+==>view의 조건에 맞지 않는 레코드를 추가할 수 있다
+	모테이블인 emp에 추가된다
+	그러나 view의 조건에 맞지 않으니
+	view에는 나타나지 않는다.
+
+
+
+<<view를 통해 조건에 맞는 레코드만 추가하고 싶을때>>
+
+
+create or replace view emp300
+as
+select eno, ename,sal,dno
+from emp where dno=300 with check option;
+
+insert into emp300 values(4000,'추미애',100,300);
+
+insert into emp300 values(5000,'김갑수',100,400);
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+SQL> insert into emp300 values(5000,'김갑수',100,400);
+insert into emp300 values(5000,'김갑수',100,400)
+            *
+1행에 오류:
+ORA-01402: 뷰의 WITH CHECK OPTION의 조건에 위배 됩니다
+
+==> view생성시의 조건에 맞지 않는 레코드는 추가할 수 없다
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-==-=-=-=-=-=-=-=-=-
+
+<<view를 통해서 검색만 하도록 하고 싶을때>>
+select만 가능하도록 하고, insert, update,delete는 못하도록
+하고 싶을 때
+
+~~~~with read only
+
+create or replace view emp300
+as
+select eno, ename,sal,dno
+from emp where dno=300 with read only;
+
+
+insert into emp300 values(5000,'홍준표',100,300);
+
+_________________________________________________________________________
+
+<< view 를 이용한 데이터의 수정 >>
+
+create or replace view emp300
+as
+select eno, ename,sal,dno
+from emp where dno=300;
+
+update emp300 set sal= 500 where eno=1014;
+update emp300 set dno = 400 where eno=1014;
+
+
+<삭제>
+delete emp300 where eno=2000;
+
+_________________________________________________________________
+
+view
+	==> 실제 물리적으로는 존재하지 않는 가상의 테이블을
+		말하며
+		1) 자주 사용하는 복잡한 select를 미리 만들어
+		    두고 편리하게 사용
+		2) 보안유지상 테이블의 일부분만 특정사용자
+		    에게 읽기 쓰기 검색 수정 권한을 부여하고자
+		    하는 용도로 사용된다.
+
+
+연습) emp테이블을 소유하고 있는 소유자가
+	emp300 뷰에대해서
+	300번 부서장에게 	c##manager300,manager300 
+	읽기만 가능한 권한을 부여하고자 합니다.
+
+
+	관리이사에게는	c##master, master
+	emp300뷰에 대해서
+	읽기 쓰기 수정 삭제 권한을 부여하고자 합니다
+
+-c##madang이 emp300뷰를 생성
+
+create or replace view emp300
+as
+select eno, ename,sal,dno
+from emp where dno=300
+with check option;
+
+
+-system계정의 두명의 사용자 계정을 생성하고 연결을
+ 위한 권한을 부여합니다.
+
+conn system/manager;
+
+
+create user c##manager300 identified by manager300;
+grant connect to c##manager300;
+
+create user c##master identified by master;
+grant connect to c##master;
+
+-emp300의 소유자인 c##madang에 접속하여
+사용자별로 emp300에 대한 권한을 다르게 부여한다
+
+ c##manager300 ->읽기
+ c##master         -> 읽기 쓰기 수정 삭제
+
+	grant select on emp300 to c##manager300;
+	grant insert, select, update, delete 
+	on emp300 to c##master;
+
+
+
+<< 특정 데이블에대한 사용자별 권한 설정 >>
+insert
+select
+update
+delete
+
+grant 권한1,권한2,.. on 테이블명 to 사용자명	
+	
+	
+
+
+- c##manager300이 접속하여 
+	c##madang.emp300을 조회 해 봅니다.
+	
+	select * from emp300;
+			===> emp300이 다른소유자의 뷰이므로 소유자명을 통해서 
+						확인해야 해요.
+						
+	select * from c##madang.emp300;
+	
+	
+	c##manger300은 읽기만 가능한 권한만 갖고 있어 
+			insert를 수행할 수 없어요.
+			
+	insert into c##madang.emp300 values(7000, 'tiger',100,300)
+                      *
+	1행에 오류:
+	ORA-01031: 권한이 불충분합니다
+	
+
+- c##master 계정으로 접속하여  c##madang.emp300 
+		insert, update, delete, select가 가능한지
+		확인 해 봅니다.			
+	
+
+conn c##master/master;							
+insert into c##madang.emp300 values(7000, 'tiger',100,300)	
+
+
+SQL> update c##madang.emp300 set dno=400 where eno=4000;
+update c##madang.emp300 set dno=400 where eno=4000
+                 *
+1행에 오류:
+ORA-01402: 뷰의 WITH CHECK OPTION의 조건에 위배 됩니다
+
+===> c##master는 emp300에 대한 
+			수정할 수 있는 권한은 있지만
+			그렇지만 view의 생성 조건에 
+			위배되는 값으로 수정할 수 없어요!!
+			
+-----------------------------------------------------------------------
+
+view하고 테이블하고 뭐가달라요!
+==> 만약 insert를 수행한다면
+		view는 모테이블에 반영이 되요
+	
+	그러나 테이블은 
+		모테이블에 반영이 되지 않아요.
+		
+		
+
+			
+	
+	
+
+
+--------------------------------------------------------------------------
+질문) 웹화면에서 말고 자바에서도 똑같이 
+			데이터베이스에 연결할 수 있어요?
+			
+			예, 맞아요,
+			잘 안되요..
+__________________________________________________________________________
+
+**서브쿼리에 대하여 설명하세요
+
+ sql문장안에 포함되는 다른sql문을 말한다
+ select from where절에 올 수 있다
+ 데이터가 많은 경우 join보다는 실행속도가 빠르다
+
+
+**다중행 연산자에 대하여 설명하세요
+
+ 서브쿼리가 where에 사용되며 서브쿼리의 건수가
+	여러건일때 사용하는 연산자들 입니다
+in any(some) all exists 등이 있다
+in은 단일행 연산자 = 을 대신하는 연산자이다
+any(some)은 비교연산자 (> < <= >=) 와 같이 사용하는 연산자 이며
+서브쿼리의 결과가 어떤 아무거라도 만족하면 main쿼리를 실행합니다
+all은 비교연산자와 같이 사용되며 서브쿼리의 결과가 모두 만족할때 main쿼리를
+실행한다.
+exists
+
+**view에 대하여 아는대로 설명하세요
+
+실제로는 존재하지 않는 가상의 논리적인 테이블을 말한다
+자주사용되는 복잡한 sql명령어를 미리 view를 만들어 두면
+편리하게 사용할 수 있다
+보안유지상 특정 테이블이 일부분만 특정사용자에게 권한을 다르게 부여하고자 할 때도
+view를 사용한다
+view를 통해서 insert update delete select가 가능하다
+기본적으로는 뷰 생성시의 조건에 맞지않는 레코드의 추가 수정이 가능하나
+with check option을 붙이면 방지할 수 있다.
+
+
+
+__________________________________________________________________
+
+인덱스의 생성
+
+create index 인덱스명 on 테이블(칼럼)
+
+연습) book테이블의 bookname으로 인덱스를 생성
+
+create index idx_book on book(bookname);
+
+select * from book where bookname like '축구%";
+
+
+새로운 도서를 추가해봅시다
+
+insert into book values(12,'재미있는 오라클','비트',20000);
+
+인덱스 재 구성
+alter index 인덱스이름 rebuild;
+
+alrter index idx_book rebuild;
+==> 매번 인덱스를 재구성해야하니
+	추가 수정이 빈번한 경우에는 인덱스가 오히려
+	번거로울 수 있다.
+
+
+<<인덱스의 삭제>>
+drop index 인덱스명;
+drop index idx_book;
+
+
+질문) 내가 만든 인덱스가 잘 만들어 졌는지 확인하고 싶을때
+        ==> 오라클의 데이터 사전(시스템뷰)를 통해
+	   확인 할 수 있다.
+
+uesr_
+
+
+사용자가 만든 모든 객체(테이블 뷰 인덱스 등등)를 확인
+하고 싶을때
+
+select object_name from user_object;
+
+==>우리가 만든 index는 idx_book 하나밖에 없는데 
+	인덱스 목록은 더 많다
+
+==> 테이블 생성시에 pk는 시스템이 자동으로 index를 생성	한다
+
+
+_________________
+
+연습문제 6-1
+
+create view hightorders
+as
+select b.bookid, bookname, name, publisher, saleprice
+from book b,orders o, customer c
+where b.bookid=o.bookid and
+c.custid=o.custid and
+saleprice >= 20000;
+
+연습문제 6-2
+
+select bookname, name from
+
+연습문제 6-3
+
+create or replace view 
+
+
+
+연습 7-1
+
+select ename from emp where mgr is null;
+
+<<주의합니다>>
+null 인 것을 찾을 때
+=null 안된다
+is null로 표현해야 한다
+
+null이 아닌것을 찾으려면
+is not null 로 표현한다.
+
+
+
+연습 7-2
+
+-join사용
+
+select ename, dname
+from emp e, dept d
+where e.dno=d.dno;
+
+-스칼라 서브쿼리 사용
+select ename,(select dname from dept d where d.dno=e.dno) 
+dname from emp e;
+
+연습 7-3
+
+select ename from emp e, dept d
+where e.dno=d.dno and
+dloc like '%서울%';
+
+select ename from emp
+where dno in (select dno from dept where dloc like '%서울%');
+
+
+-exists를 사용하고 싶을때
+
+select ename from emp e
+where exists
+(select dno from dept d where dloc like '%서울%'  and e.dno=d.dno);
+
+
+
+연습 7-4
+
+select avg(sal) from emp;
+
+select ename from emp
+where sal > (select avg(sal) from emp);
+
+
+
+연습 7-5
+
+select ename,sal,dno from emp e1
+where sal > (select avg(sal) from emp e2 where e1.dno=e2.dno)
+order by dno;
+
+select dno, avg(sal)
+from emp group by dno
+order by dname;
+
+
+
+
+
+상관부속질의가 무엇인가
+==>서브쿼리 where절에 오는 경우를 부속질의라고 하며
+     이때 메인쿼리가 조인식이 필요한 부속질을 
+	상관부속질의 라고 한다
+
+부속질의 = 중첩질의 = 서브쿼리
+
+스칼라 부속질의 ==> select절에 오는 것
+인라인 뷰 	   from절에 오는 것
+상관부속질의	   메인쿼리와 join식이 있는것을 말한다
+중첩질의		   where 절에 오는 것이라고 부를수 있으나
+		   질의문
+
+
+
+
+데이터베이스 프로그래밍
+
+1. PL/SQL
+	별도의 자바나 c c++혹은 웹프로그래밍을 
+	이용하지 않고 오라클내에서
+	데이터베이스 프로그램을 만들 수 있다.
+--------------------------------------------------------------------------------
+<프로시저 만드는 방법 (형식)>>
+
+create or replace procedure 프로시저이름(매개변수들...)
+as
+지역변수들
+begin
+프로시저가 해야할 명령어들
+end;
+/
+
+연습) 도서번호 도서명 출판사 가격을 매개변수로 전달받아
+	새로운 레코드를 book에 
+	추가하는 프로시저를 만들어 봅시다
+	
+create or replace procedure insertBook(
+bookid in number,
+bookname in varchar2,
+publisher in varchar2,
+price number
+)
+as
+begin
+insert into book values(bookid,bookname,publisher,price);
+end;
+/
+
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-==-=-=-=-=-=-=-=-=-=
+
+SQL> create or replace procedure insertBook(
+  2  bookid in number,
+  3  bookname in varchar2(20),
+  4  publisher in varchar2(20),
+  5  price number
+  6  )
+  7  as
+  8  begin
+  9  insert into book values(bookid,bookname,publisher,price);
+ 10  end;
+ 11  /
+
+경고: 컴파일 오류와 함께 프로시저가 생성되었습니다.
+
+SQL> show errors
+PROCEDURE INSERTBOOK에 대한 오류:
+
+LINE/COL ERROR
+-------- -----------------------------------------------------------------
+3/21     PLS-00103: 심볼 "("를 만났습니다 다음 중 하나가 기대될 때:
+         := . ) , @ % default character
+         심볼이 ":=" 계속하기 위하여 "("로 치환되었습니다
+
+4/22     PLS-00103: 심볼 "("를 만났습니다 다음 중 하나가 기대될 때:
+         := . ) , @ % default character
+         심볼이 ":=" 계속하기 위하여 "("로 치환되었습니다
+
+
+
+_=-=-=-=-=-==--=-=-=-=-=-=-=-=-=-=--=--=-=-=-=-=-=-=-=-=-=-
+
+<<프로시저의 호출>>
+exec 프로시저명(값1, 값2, . . .)
+exec insertBook(13,'재미있는 jsp','비트',30000);
+
+연습) 도서번호와 가격을 매개변수로 전달받아
+	해당도서의 가격을 수정하는 프로시저를 생성하고
+	사용해봅니다
+
+create or replace procedure updatePrice(
+p_bookid in number,
+p_price number
+)
+as
+begin
+update book set price = p_price where bookid= p_bookid;
+end;
+/
+
+exec updatePrice(12,30000);
+
+
+create or replace procedure delBook(
+p_bookid in number
+)
+as
+begin
+delete book where bookid= p_bookid;
+end;
+/
+
+
+
+
+2. 자바에서 db연결 프로그램
+	
+	
+
+
+
+3. 웹에서  db연결 프로그램
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

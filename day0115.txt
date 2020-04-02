@@ -1,0 +1,471 @@
+create table test(
+title varchar2(20),
+no number);
+
+insert into test values('aaaa',20);
+insert into test values('bbbb',-20);
+
+select abs(no) from test;
+
+
+
+
+select abs(-78) from dual;
+
+select 75.6789 from dual;
+select round(75.6789,0) from dual;
+select round(75.6789,1) from dual;
+
+select 6749 from dual;
+select round(6749,-1) from dual;
+select round(6749,-2) from dual;
+
+연습) 고객별 평균 주문금액을 백원 단위로 반올림한 값을 출력
+
+select custid,avg(saleprice) from orders group by custid;
+
+
+select custid,round(avg(saleprice),-2) from orders group by custid;
+
+연습) 도서의 도서번호, 도서명 , 출판사, 가격을 출력
+	단, 도서명의 '야구'를 '농구'로 변경한 후 나타낸다
+
+select bookid, bookname, publisher, price from book;
+
+select bookid,replace(bookname,'야구','농구') publisher, price from book;
+
+
+___________________________________________________________________
+
+
+select name from customer;
+
+select substr(name,1,1) from customer;
+
+insert into customer values(13,'tiger','대한민국 서울','1111');
+insert into customer values(14,' tiger','대한민국 부산','2222');
+insert into customer values(15,'tiger ','대한민국 울산','3333');
+insert into customer values(16,'TIGER','대한민국 전주','4444');
+insert into customer values(17,' Tiger ','대한민국 경주','5555');
+
+이름이 tiger인 회원을 출력
+
+select * from customer where name = 'tiger';		       // 소문자에 띄어쓰기 없는 타이거 출력
+select * from customer where lower(trim(name)) = 'tiger';       // 모든 타이거 출력
+
+
+
+select to_date('2020/01/05','yyyy/mm/dd')+5 from dual;
+select 'hello' from dual;
+
+연습) 마당서점은 주문일로 부터 10일 후 매출을 확정한다,
+	각 주문의 확정일을 출력
+
+select orderid,orderdate 주문일,orderdate+10 확정 from orders;
+
+
+주문번호, 주문일을 출력
+
+select orderid, orderdate from orders;
+
+select orderid, to_char(orderdate,'yyyy/mm/dd') from orders;
+
+select orderid, to_char(orderdate,'yyyy') from orders;
+select orderid, to_char(orderdate,'mm') from orders;
+select orderid, to_char(orderdate,'dd') from orders;
+
+_______________________________________________________________________________
+
+select sysdate from dual;
+select sysdate-1 어제, sysdate 오늘, sysdate+1 내일 from dual;
+
+________________________________________________________________________________
+
+select nvl(avg(no),0) from test;
+
+create table customer10  as select * from customer;
+select max(cusid)+1 from customer10;
+
+select nvl(mac(cusid),0)+1 from customer10;
+
+is null		= null
+is not null
+
+전화번호가 null인 고객의 정보를 출력
+select * from customer where phone is null;
+select * from customer where phone = null;         //잘못된 표현 방법
+
+전화번호사 null이 아닌 고객의 정보를 출력
+select * from customer where phone is not null;
+
+
+insert into emp values(1027, '유관순', '사원', null, null,1020,sysdate,400);
+
+select avg(sal) from emp;		// null항목은 제외( 값이 없으므로)
+select sum(sal)/28 from emp;	
+
+_______________________________________
+
+모든 도서목록과 가격을 출력
+( 가격이 높은 순으로 출력)
+
+select bookname, price from book;
+select rownum,bookname, price from book order by price desc;    //rownum= 행 번호
+
+
+select rownum,bookname,price from( select bookname, price from book order by price desc); 
+//정렬하여 행 번호를 붙일 때에는 정렬하면서 동시에 행번호를 붙일 수 없어요.
+
+
+서브쿼리를 이용해야 합니다.
+정렬을 먼저 수행하면서
+
+연습) 가격이 가장 비싼 도서 3권을 출력
+
+select bookname, price from book order by price desc;
+
+select rownum, bookname,price
+from(select bookname, price from book order by price desc)
+where rownum<=3;
+
+연습) 각 고객별 구매수량을 출력
+
+select custid, count(*)
+from orders group by custid;
+
+
+연습) 구매수량이 가장 높은 상위 3명의 고객에게 상품권을 발송하려고한다
+	해당고객의 이름을 출력
+
+select custid,count(*)
+from oreder group by custid
+order by count(*) desc;
+
+select rownum, custid from(select custid,count(*)
+from orders group by custid
+order by count(*) desc)
+where rownum <=3;
+
+select custid from(select custid,count(*)
+from orders group by custid
+order by count(*) desc)
+where rownum <=3;
+
+select name, (select sum(saleprice) from orders o where o.custid= c.cusid ) 
+from customer c where
+cusid in(
+select custid from(select custid, count(*)
+from orders group by custid
+order by count(*) desc) where rownum <=3);
+
+연습) 판매량이 가장 저조한 두권의 도서를 절판하려고 한다,
+	해당도서의 이름과 출판사를 출력.
+
+select boookid, count(*) from orders group by bookid order by count(*);
+
+
+select rownum,bookid cnt from(
+select boookid, count(*) from orders group by bookid order by count(*))
+where rownum <=2;
+
+//count(*)를 기준으로 정렬하였기 때문에 
+  count(*)가 동일한 값이 여러개 인경우
+  bookid가 언제라도 동일한 순서대로 나오기를
+  기대하기는 어렵다.
+
+select bookname, publisher from
+book where bookid in(select bookid from(
+select bookid, count(*) cnt from orders group by bookid order by count(*))
+where rownum <=2);
+_______________________________________________________________________________________
+
+====>   판매량 순으로 정렬하였을때 2번째 도서의 판매수량과 
+	 동일한 판매수량의 모든 도서를 절판의 대상으로 처리해보자.
+
+select bookid,count(*) cnt from orders group by bookid order by count(*)
+
+
+select cnt from
+(select rownum n,bookid, cnt
+from(select bookid,count(*) 
+cnt from orders group by bookid order by count(*))
+) where n=2;
+=====> b로 둔다
+
+
+<<rownum>>
+      <=
+ rownum을 다음과 같이 비교하려면 rownum를 적용한 
+ 가상의 테이블을 생성해야 한다
+
+ rownum >= a and rownum <= b
+ rownum = a
+
+select bookid, count(*) cnt from orders group by bookid order by count(*)
+====> a로 두고
+
+
+select bookid from (select bookid, count(*) cnt from orders group by bookid order by count(*))
+where cnt=(select cnt from
+(select rownum n,bookid, cnt
+from(select bookid,count(*) 
+cnt from orders group by bookid order by count(*))
+) where n=2);
+______________________________________________________________
+
+
+
+book테이블에서 도서번호 c에 해당하는 도서명, 출판사를 출력
+select bookid, bookname, publisher 
+	from book 
+	where bookid in (select bookid from (select bookid, count(*) cnt from orders group by bookid order by count(*)) 
+	where cnt = (select cnt from 
+(select rownum n, bookid, cnt 
+	from (select bookid, count(*) cnt from orders group by bookid order by count(*)))
+	where n = 2));     
+     
+
+
+months_between(날짜1, 날짜2);
+	==> 두 날짜 사이에 개월수를 변환
+	==> 날짜1이 더 최근의 날 이어야 합니다
+
+연습) 수지는 태어난지 몇개월이 되었는지 출력
+	'1999/11/12'
+
+select months_between(sysdate, '1999/11/12') from dual;
+
+
+
+연습) 서울에 근무하지 않는 근무개월수가 60 개월 이상인 직원들에게 
+	특별 상여금을 지급하려고 합니다
+	상여급은 급여의 200%입니다.
+	대상자의 이름, 부서명, 관리자명, 상여금을 출력합니다
+	부서명순으로 정렬하고 동일할때에는 이름순으로 정렬합니다.
+
+select e.ename, dname, m.ename, e.sal*2 상여금
+from emp e, emp m, dept d
+where e.mgr = m.eno and
+e.dno=d.dno and
+months_between(sysdate, e.hiredate) >= 60 and
+dloc != '서울'
+order by dname, e.ename;
+
+
+
+연습) '서울'에 근무하는 직원들은 입사일로 부터 60개월이 지나면
+	1년동안 지방근무를 해야한다
+	대상자의 이름과, 부서명, 지방근무 시작일을 출력하세요
+
+
+select ename, dname , add_months(hiredate, 60)
+from emp, dept where emp.dno = dept.dno and
+dloc = '서울';
+
+
+
+연습) 2019년도 입사한 직원들은
+	채용신체검사 누락되어 다시 받아야 합니다
+	해당직원들의 이름, 부서명, 관리자명, 입사일을 출력합니다.
+
+select e.ename, dname, m.ename, e.hiredate
+from emp e, emp m, dept d
+where e.mgr = m.eno and
+e.dno = d.dno and 
+to_char(e.hiredate, 'yyyy')='2019';
+
+
+__________________________________________________________________
+
+
+
+판매수량이 저조한 2권의 도서를 절판하려고 한다.
+해당도서이름과 출판사를 출력
+
+select bookid, count(*) cnt from orders 
+group by bookid
+order by count(*);				A
+	
+
+A의 결과에 행번호를 붙여 행번호를 붙여 출력해요
+
+select rownum n, bookid, cnt from (select bookid, count(*) cnt from orders 
+group by bookid
+order by count(*));				B
+	
+
+B중에 n이 2인것의 cnt를 출력
+
+select cnt from () where n = 2;
+	
+select cnt from (select rownum n, bookid, cnt from (select bookid, count(*) cnt from orders 
+group by bookid
+order by count(*))) where n = 2;		C
+	
+	
+A중에 cnt가 C와 동일한 bookid를 출력
+
+select bookid from () where cnt = ();
+
+select bookid from (select bookid, count(*) cnt from orders 
+group by bookid
+order by count(*)) where cnt = (select cnt from (select rownum n, bookid, cnt from (select bookid, count(*) cnt from orders 
+group by bookid
+order by count(*))) where n = 2);		D
+	
+	
+book중에 bookid가 D에 해당하는 도서명, 출판사출력
+
+select bookname, publisher from 
+book where bookid in (select bookid from (select bookid, count(*) cnt from orders 
+group by bookid
+order by count(*)) where cnt = (select cnt from (select rownum n, bookid, cnt from (select bookid, count(*) cnt from orders 
+group by bookid
+order by count(*))) where n = 2));	
+
+
+
+
+연습) 도서번호별 판매수량을 출력하세요.
+	단 하나도 안팔린 판매수량을 0으로 출력하세요.
+select rownum n,bookid,cnt
+from (select b.bookid bookid, count(o.bookid) cnt
+from book b left outer join orders o
+on b.bookid = o.bookid
+group by b.bookid order by count(o.bookid));				A
+
+
+
+select bookid from book;
+select distinct bookid from orders order by bookid;
+
+
+select cnt from(select rownum n,bookid,cnt
+from (select b.bookid bookid, count(o.bookid) cnt
+from book b left outer join orders o
+on b.bookid = o.bookid
+group by b.bookid order by count(o.bookid))) where n =2;		B
+
+
+A중에서 cnt가 C와 동일한 bookid 를 출력
+
+select bookid from (select rownum n,bookid,cnt
+from (select b.bookid bookid, count(o.bookid) cnt
+from book b left outer join orders o
+on b.bookid = o.bookid
+group by b.bookid order by count(o.bookid))) where cnt =(select cnt from(select rownum n,bookid,cnt
+from (select b.bookid bookid, count(o.bookid) cnt
+from book b left outer join orders o
+on b.bookid = o.bookid
+group by b.bookid order by count(o.bookid))) where n =2);		C
+
+book테이블 중에 bookid가 D에 해당하는 도서명, 출판사
+
+select bookname, publisher from book
+where bookid in (select bookid from (select rownum n,bookid,cnt
+from (select b.bookid bookid, count(o.bookid) cnt
+from book b left outer join orders o
+on b.bookid = o.bookid
+group by b.bookid order by count(o.bookid))) where cnt =(select cnt from(select rownum n,bookid,cnt
+from (select b.bookid bookid, count(o.bookid) cnt
+from book b left outer join orders o
+on b.bookid = o.bookid
+group by b.bookid order by count(o.bookid))) where n =2));		D
+
+
+___________________________________________________________________________________________
+습) emp 테이블에 
+	이메일을 위한 email칼럼을 추가합니다.
+		  50	
+alter table emp add email varchar2(50);					  
+		
+연습) emp 테이블에 
+	주민번호를 위한 jumin칼럼을 추가합니다.
+				20		
+alter table emp add jumin varchar2(20);
+
+
+
+
+update emp set email='jin@gmail.com',jumin='590101-1234567' 
+					where ename = '유진탁';
+
+update emp set email='dong@gmail.com',jumin='790101-123477' 
+					where ename = '이동현';
+update emp set email='jong@gmail.com',jumin='890101-1234567' 
+					where ename = '이종호';
+update emp set email='eun@gmail.com',jumin='700101-2234567' 
+					where ename = '전은진';														
+update emp set email='suji@gmail.com',jumin='991101-2234567' 
+					where ename = '홍수지';
+update emp set email='wook@gmail.com',jumin='850714-1234567' 
+					where ename = '서동욱';
+							
+update emp set email='park@gmail.com',jumin='771225-1234567' 
+					where ename = '박유철';
+update emp set email='kjg@gmail.com',jumin='880726-1234567' 
+					where ename = '김정규';
+update emp set email='jyh@gmail.com',jumin='790321-1234567' 
+					where ename = '주영현';														
+update emp set email='jin@gmail.com',jumin='590101-1234567' 
+					where ename = '김찬휘';
+update emp set email='kmj@gmail.com',jumin='891121-2234567' 
+					where ename = '김민주';
+update emp set email='kor@gmail.com',jumin='890103-2234567' 
+					where ename = '곽아름';
+update emp set email='jcy@gmail.com',jumin='831029-2234567' 
+					where ename = '장채은';
+update emp set email='lhj@gmail.com',jumin='851218-1234567' 
+					where ename = '이희재';														
+update emp set email='lsy@gmail.com',jumin='820408-2234567' 
+					where ename = '이수인';
+update emp set email='hmy@gmail.com',jumin='910215-2234567' 
+					where ename = '현민아';
+														
+update emp set email='hjr@gmail.com',jumin='811109-2234567' 
+					where ename = '한주련';
+update emp set email='lyy@gmail.com',jumin='891110-1234567' 
+					where ename = '이원우';
+update emp set email='cys@gmail.com',jumin='891202-1234567' 
+					where ename = '최영수';														
+update emp set email='cbh@gmail.com',jumin='800112-1234567' 
+					where ename = '최봉현';
+update emp set email='lgh@gmail.com',jumin='890101-1234567' 
+					where ename = '이근희';
+																					
+update emp set email='gsy@gmail.com',jumin='890102-2234567' 
+					where ename = '곽설아';
+update emp set email='khs@gmail.com',jumin='790105-2234567' 
+					where ename = '김혜선';
+update emp set email='hjy@gmail.com',jumin='890707-2234567' 
+					where ename = '하지연';														
+update emp set email='pdh@gmail.com',jumin='890108-1234567' 
+					where ename = '박도형';
+update emp set email='gyh@gmail.com',jumin='790507-1234567' 
+					where ename = '고요한';
+																																	
+update emp set email='yhs@gmail.com',jumin='890101-1234567' 
+					where ename = '유현성';
+update emp set email='ygs@gmail.com',jumin='790101-2234567' 
+					where ename = '유관순';
+
+							
+모든 직원들의 이름과 이메일, 주민번호를 출력
+
+select ename, email, jumin from emp;
+
+모든 직원들의 이름과 아이디를 출력
+select instr(email,'@') from emp;
+select substr(email, 1 , instr(email,'@') -1 ) from emp;
+
+
+___________________________________________________________________________________________
+
+서비스를 위한 상세화면을 설계
+
+맨처음 여러분의 서비스를 방문했을때의 화면부터
+사용자가 경험하는 모든 화면에 대하여 상세하게 그려봅니다
+(실제 데이터가 있다고 가정한다)
+
+화면마다 구분하기 위한 번호를 붙이고 
+어떤 화면에 어떤 일이 일어났을 때 이동이 되는지도 연결하세요.

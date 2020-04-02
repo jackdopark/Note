@@ -1,0 +1,437 @@
+CREATE TABLE 고객 (
+       고객번호             NUMBER NOT NULL,
+       고객명               VARCHAR2(20) NULL
+);
+
+
+ALTER TABLE 고객
+       ADD  ( PRIMARY KEY (고객번호) ) ;
+
+
+CREATE TABLE 제품 (
+       제품번호             NUMBER NOT NULL,
+       제품명               VARCHAR2(50) NULL,
+       주문단가             NUMBER NULL
+);
+
+
+ALTER TABLE 제품
+       ADD  ( PRIMARY KEY (제품번호) ) ;
+
+
+CREATE TABLE 주문 (
+       주문번호             NUMBER NOT NULL,
+       주문일자             DATE NULL,
+       주문총금액           NUMBER NULL,
+       사업자번호           VARCHAR2(40) NULL,
+       수출상태             VARCHAR2(20) NULL,
+       고객번호             NUMBER NOT NULL
+);
+
+
+ALTER TABLE 주문
+       ADD  ( PRIMARY KEY (주문번호) ) ;
+
+
+CREATE TABLE 주문상세 (
+       주문상세번호         NUMBER NOT NULL,
+       주문수량             NUMBER NULL,
+       주문금액             NUMBER NULL,
+       주문번호             NUMBER NOT NULL,
+       제품번호             NUMBER NOT NULL
+);
+
+
+ALTER TABLE 주문상세
+       ADD  ( PRIMARY KEY (주문상세번호) ) ;
+
+
+ALTER TABLE 주문
+       ADD  ( FOREIGN KEY (고객번호)
+                             REFERENCES 고객 ) ;
+
+
+ALTER TABLE 주문상세
+       ADD  ( FOREIGN KEY (제품번호)
+                             REFERENCES 제품 ) ;
+
+
+ALTER TABLE 주문상세
+       ADD  ( FOREIGN KEY (주문번호)
+                             REFERENCES 주문 ) ;
+
+
+
+
+create or replace trigger tD_고객 after DELETE on 고객 for each row
+-- ERwin Builtin Wed Jan 29 14:58:02 2020
+-- DELETE trigger on 고객 
+declare numrows INTEGER;
+begin
+    /* ERwin Builtin Wed Jan 29 14:58:02 2020 */
+    /* 고객 R/11 주문 ON PARENT DELETE RESTRICT */
+    /* ERWIN_RELATION:PARENT_OWNER="", PARENT_TABLE="고객"
+    CHILD_OWNER="", CHILD_TABLE="주문"
+    P2C_VERB_PHRASE="R/11", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_11", FK_COLUMNS="고객번호" */
+    select count(*) into numrows
+      from 주문
+      where
+        /*  %JoinFKPK(주문,:%Old," = "," and") */
+        주문.고객번호 = :old.고객번호;
+    if (numrows > 0)
+    then
+      raise_application_error(
+        -20001,
+        'Cannot DELETE 고객 because 주문 exists.'
+      );
+    end if;
+
+
+-- ERwin Builtin Wed Jan 29 14:58:02 2020
+end;
+/
+
+create or replace trigger tU_고객 after UPDATE on 고객 for each row
+-- ERwin Builtin Wed Jan 29 14:58:02 2020
+-- UPDATE trigger on 고객 
+declare numrows INTEGER;
+begin
+  /* ERwin Builtin Wed Jan 29 14:58:02 2020 */
+  /* 고객 R/11 주문 ON PARENT UPDATE RESTRICT */
+  /* ERWIN_RELATION:PARENT_OWNER="", PARENT_TABLE="고객"
+    CHILD_OWNER="", CHILD_TABLE="주문"
+    P2C_VERB_PHRASE="R/11", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_11", FK_COLUMNS="고객번호" */
+  if
+    /* %JoinPKPK(:%Old,:%New," <> "," or ") */
+    :old.고객번호 <> :new.고객번호
+  then
+    select count(*) into numrows
+      from 주문
+      where
+        /*  %JoinFKPK(주문,:%Old," = "," and") */
+        주문.고객번호 = :old.고객번호;
+    if (numrows > 0)
+    then 
+      raise_application_error(
+        -20005,
+        'Cannot UPDATE 고객 because 주문 exists.'
+      );
+    end if;
+  end if;
+
+
+-- ERwin Builtin Wed Jan 29 14:58:02 2020
+end;
+/
+
+create or replace trigger tD_제품 after DELETE on 제품 for each row
+-- ERwin Builtin Wed Jan 29 14:58:02 2020
+-- DELETE trigger on 제품 
+declare numrows INTEGER;
+begin
+    /* ERwin Builtin Wed Jan 29 14:58:02 2020 */
+    /* 제품 R/13 주문상세 ON PARENT DELETE RESTRICT */
+    /* ERWIN_RELATION:PARENT_OWNER="", PARENT_TABLE="제품"
+    CHILD_OWNER="", CHILD_TABLE="주문상세"
+    P2C_VERB_PHRASE="R/13", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_13", FK_COLUMNS="제품번호" */
+    select count(*) into numrows
+      from 주문상세
+      where
+        /*  %JoinFKPK(주문상세,:%Old," = "," and") */
+        주문상세.제품번호 = :old.제품번호;
+    if (numrows > 0)
+    then
+      raise_application_error(
+        -20001,
+        'Cannot DELETE 제품 because 주문상세 exists.'
+      );
+    end if;
+
+
+-- ERwin Builtin Wed Jan 29 14:58:02 2020
+end;
+/
+
+create or replace trigger tU_제품 after UPDATE on 제품 for each row
+-- ERwin Builtin Wed Jan 29 14:58:02 2020
+-- UPDATE trigger on 제품 
+declare numrows INTEGER;
+begin
+  /* ERwin Builtin Wed Jan 29 14:58:02 2020 */
+  /* 제품 R/13 주문상세 ON PARENT UPDATE RESTRICT */
+  /* ERWIN_RELATION:PARENT_OWNER="", PARENT_TABLE="제품"
+    CHILD_OWNER="", CHILD_TABLE="주문상세"
+    P2C_VERB_PHRASE="R/13", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_13", FK_COLUMNS="제품번호" */
+  if
+    /* %JoinPKPK(:%Old,:%New," <> "," or ") */
+    :old.제품번호 <> :new.제품번호
+  then
+    select count(*) into numrows
+      from 주문상세
+      where
+        /*  %JoinFKPK(주문상세,:%Old," = "," and") */
+        주문상세.제품번호 = :old.제품번호;
+    if (numrows > 0)
+    then 
+      raise_application_error(
+        -20005,
+        'Cannot UPDATE 제품 because 주문상세 exists.'
+      );
+    end if;
+  end if;
+
+
+-- ERwin Builtin Wed Jan 29 14:58:02 2020
+end;
+/
+
+create or replace trigger tD_주문 after DELETE on 주문 for each row
+-- ERwin Builtin Wed Jan 29 14:58:02 2020
+-- DELETE trigger on 주문 
+declare numrows INTEGER;
+begin
+    /* ERwin Builtin Wed Jan 29 14:58:02 2020 */
+    /* 주문 R/12 주문상세 ON PARENT DELETE RESTRICT */
+    /* ERWIN_RELATION:PARENT_OWNER="", PARENT_TABLE="주문"
+    CHILD_OWNER="", CHILD_TABLE="주문상세"
+    P2C_VERB_PHRASE="R/12", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_12", FK_COLUMNS="주문번호" */
+    select count(*) into numrows
+      from 주문상세
+      where
+        /*  %JoinFKPK(주문상세,:%Old," = "," and") */
+        주문상세.주문번호 = :old.주문번호;
+    if (numrows > 0)
+    then
+      raise_application_error(
+        -20001,
+        'Cannot DELETE 주문 because 주문상세 exists.'
+      );
+    end if;
+
+
+-- ERwin Builtin Wed Jan 29 14:58:02 2020
+end;
+/
+
+create or replace trigger tI_주문 after INSERT on 주문 for each row
+-- ERwin Builtin Wed Jan 29 14:58:02 2020
+-- INSERT trigger on 주문 
+declare numrows INTEGER;
+begin
+    /* ERwin Builtin Wed Jan 29 14:58:02 2020 */
+    /* 고객 R/11 주문 ON CHILD INSERT RESTRICT */
+    /* ERWIN_RELATION:PARENT_OWNER="", PARENT_TABLE="고객"
+    CHILD_OWNER="", CHILD_TABLE="주문"
+    P2C_VERB_PHRASE="R/11", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_11", FK_COLUMNS="고객번호" */
+    select count(*) into numrows
+      from 고객
+      where
+        /* %JoinFKPK(:%New,고객," = "," and") */
+        :new.고객번호 = 고객.고객번호;
+    if (
+      /* %NotnullFK(:%New," is not null and") */
+      
+      numrows = 0
+    )
+    then
+      raise_application_error(
+        -20002,
+        'Cannot INSERT 주문 because 고객 does not exist.'
+      );
+    end if;
+
+
+-- ERwin Builtin Wed Jan 29 14:58:02 2020
+end;
+/
+
+create or replace trigger tU_주문 after UPDATE on 주문 for each row
+-- ERwin Builtin Wed Jan 29 14:58:02 2020
+-- UPDATE trigger on 주문 
+declare numrows INTEGER;
+begin
+  /* ERwin Builtin Wed Jan 29 14:58:02 2020 */
+  /* 주문 R/12 주문상세 ON PARENT UPDATE RESTRICT */
+  /* ERWIN_RELATION:PARENT_OWNER="", PARENT_TABLE="주문"
+    CHILD_OWNER="", CHILD_TABLE="주문상세"
+    P2C_VERB_PHRASE="R/12", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_12", FK_COLUMNS="주문번호" */
+  if
+    /* %JoinPKPK(:%Old,:%New," <> "," or ") */
+    :old.주문번호 <> :new.주문번호
+  then
+    select count(*) into numrows
+      from 주문상세
+      where
+        /*  %JoinFKPK(주문상세,:%Old," = "," and") */
+        주문상세.주문번호 = :old.주문번호;
+    if (numrows > 0)
+    then 
+      raise_application_error(
+        -20005,
+        'Cannot UPDATE 주문 because 주문상세 exists.'
+      );
+    end if;
+  end if;
+
+  /* ERwin Builtin Wed Jan 29 14:58:02 2020 */
+  /* 고객 R/11 주문 ON CHILD UPDATE RESTRICT */
+  /* ERWIN_RELATION:PARENT_OWNER="", PARENT_TABLE="고객"
+    CHILD_OWNER="", CHILD_TABLE="주문"
+    P2C_VERB_PHRASE="R/11", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_11", FK_COLUMNS="고객번호" */
+  select count(*) into numrows
+    from 고객
+    where
+      /* %JoinFKPK(:%New,고객," = "," and") */
+      :new.고객번호 = 고객.고객번호;
+  if (
+    /* %NotnullFK(:%New," is not null and") */
+    
+    numrows = 0
+  )
+  then
+    raise_application_error(
+      -20007,
+      'Cannot UPDATE 주문 because 고객 does not exist.'
+    );
+  end if;
+
+
+-- ERwin Builtin Wed Jan 29 14:58:02 2020
+end;
+/
+
+create or replace trigger tI_주문상세 after INSERT on 주문상세 for each row
+-- ERwin Builtin Wed Jan 29 14:58:02 2020
+-- INSERT trigger on 주문상세 
+declare numrows INTEGER;
+begin
+    /* ERwin Builtin Wed Jan 29 14:58:02 2020 */
+    /* 제품 R/13 주문상세 ON CHILD INSERT RESTRICT */
+    /* ERWIN_RELATION:PARENT_OWNER="", PARENT_TABLE="제품"
+    CHILD_OWNER="", CHILD_TABLE="주문상세"
+    P2C_VERB_PHRASE="R/13", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_13", FK_COLUMNS="제품번호" */
+    select count(*) into numrows
+      from 제품
+      where
+        /* %JoinFKPK(:%New,제품," = "," and") */
+        :new.제품번호 = 제품.제품번호;
+    if (
+      /* %NotnullFK(:%New," is not null and") */
+      
+      numrows = 0
+    )
+    then
+      raise_application_error(
+        -20002,
+        'Cannot INSERT 주문상세 because 제품 does not exist.'
+      );
+    end if;
+
+    /* ERwin Builtin Wed Jan 29 14:58:02 2020 */
+    /* 주문 R/12 주문상세 ON CHILD INSERT RESTRICT */
+    /* ERWIN_RELATION:PARENT_OWNER="", PARENT_TABLE="주문"
+    CHILD_OWNER="", CHILD_TABLE="주문상세"
+    P2C_VERB_PHRASE="R/12", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_12", FK_COLUMNS="주문번호" */
+    select count(*) into numrows
+      from 주문
+      where
+        /* %JoinFKPK(:%New,주문," = "," and") */
+        :new.주문번호 = 주문.주문번호;
+    if (
+      /* %NotnullFK(:%New," is not null and") */
+      
+      numrows = 0
+    )
+    then
+      raise_application_error(
+        -20002,
+        'Cannot INSERT 주문상세 because 주문 does not exist.'
+      );
+    end if;
+
+
+-- ERwin Builtin Wed Jan 29 14:58:02 2020
+end;
+/
+
+create or replace trigger tU_주문상세 after UPDATE on 주문상세 for each row
+-- ERwin Builtin Wed Jan 29 14:58:02 2020
+-- UPDATE trigger on 주문상세 
+declare numrows INTEGER;
+begin
+  /* ERwin Builtin Wed Jan 29 14:58:02 2020 */
+  /* 제품 R/13 주문상세 ON CHILD UPDATE RESTRICT */
+  /* ERWIN_RELATION:PARENT_OWNER="", PARENT_TABLE="제품"
+    CHILD_OWNER="", CHILD_TABLE="주문상세"
+    P2C_VERB_PHRASE="R/13", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_13", FK_COLUMNS="제품번호" */
+  select count(*) into numrows
+    from 제품
+    where
+      /* %JoinFKPK(:%New,제품," = "," and") */
+      :new.제품번호 = 제품.제품번호;
+  if (
+    /* %NotnullFK(:%New," is not null and") */
+    
+    numrows = 0
+  )
+  then
+    raise_application_error(
+      -20007,
+      'Cannot UPDATE 주문상세 because 제품 does not exist.'
+    );
+  end if;
+
+  /* ERwin Builtin Wed Jan 29 14:58:02 2020 */
+  /* 주문 R/12 주문상세 ON CHILD UPDATE RESTRICT */
+  /* ERWIN_RELATION:PARENT_OWNER="", PARENT_TABLE="주문"
+    CHILD_OWNER="", CHILD_TABLE="주문상세"
+    P2C_VERB_PHRASE="R/12", C2P_VERB_PHRASE="", 
+    FK_CONSTRAINT="R_12", FK_COLUMNS="주문번호" */
+  select count(*) into numrows
+    from 주문
+    where
+      /* %JoinFKPK(:%New,주문," = "," and") */
+      :new.주문번호 = 주문.주문번호;
+  if (
+    /* %NotnullFK(:%New," is not null and") */
+    
+    numrows = 0
+  )
+  then
+    raise_application_error(
+      -20007,
+      'Cannot UPDATE 주문상세 because 주문 does not exist.'
+    );
+  end if;
+
+
+-- ERwin Builtin Wed Jan 29 14:58:02 2020
+end;
+/
+
+__________________________________________________________________________________________________________________________________________________________
+
+
+어느때에 식별관계 어느때에 비식별관계로 설정하는가?
+
+관계가 있다==> 공통으로 들어가는 컬럼이 있다.
+		부모의 주식별자가 공통으로 들어간다
+부모의 주식별자가 자식에게 가서 식별자 역할을 한다=> 식별관계
+부모의 주식별자가 일반으로 들어간다=> 비식별관계
+
+
+
+
+
+

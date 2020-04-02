@@ -1,0 +1,17 @@
+create table member(id varchar2(20) primary key,pwd varchar2(20),
+name varchar2(20),tel varchar2(20),birth date,email varchar2(30),
+gender varchar2(10),bloodType varchar2(10),hobby varchar2(30),
+url varchar2(30),job varchar2(15),intro varchar2(500));
+
+column id format a10;
+column pwd format a10;
+column name format a10;
+column tel format a10;
+column birth format a10;
+column email format a10;
+column gender format a10;
+column bloodType format a10;
+column hobby format a10;
+column url format a10;
+column job format a10;
+column intro format a10;

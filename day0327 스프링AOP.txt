@@ -1,0 +1,14 @@
+di = 객체가 주인공
+aop의 주인공 = 메소드(공통 관심사항에 대한 조립 = spring이 해준다)
+공통관심사항을 뽑은것을 Advice
+호출되는 지점을 JoinPoint -->이것을 모아놓은것을 Pointcut
+핵심관심사항에 advice를 엮어주는 것을 Weaving이라고 하고
+그렇게 만들어진 객체를 Aspect라고 한다.
+
+_______________________________________________________________________
+
+Ajax통신에 의해 상품등록 목록 수정 삭제에 대한 서비스를 등록
+
+update emp set email='jackdopark8@gmail.com' where ename='박도형';
+
+

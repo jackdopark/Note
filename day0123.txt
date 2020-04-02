@@ -1,0 +1,363 @@
+
+		
+<< 프로시저 만들기 >>
+		
+create or replace procedure 프로시저명(
+	매개변수명 모드 자료형,
+	...
+)		
+as
+	지역변수(들)
+begin
+	프로시저가 해야할 명령어들
+end;
+/
+
+
+============================================================
+
+연습) 고객번호, 고객명, 주소, 전화를 매개변수로 전달받아 
+		customer 테이블에 새로운 레코드를 추가하는 
+		프로시저를 생성하고 사용해 봅니다.
+		
+create or replace procedure insertCustomer(
+	p_custid in number,
+	p_name in varchar2,
+	p_address in varchar2,
+	p_phone in varchar2
+)
+as
+begin
+	insert into customer values(p_custid,p_name,p_address,p_phone);
+end;
+/		
+
+	
+
+exec insertCustomer(8, '유관순', '대한민국 천안', '000-2222-2222');
+
+
+연습) 동일한 도서가 있는 점검한 후 삽입하는 프로시저 
+		만약 매개변수로 전달받은 도서명과 동일한 도서가 있다면
+		해당도서의 가격을 수정하고 
+		그렇지 않다면 도서를 추가하는 프로시저
+
+
+
+create or replace procedure BookInsertOrUpdate(
+	p_bookid in number,
+	p_bookname in varchar2,
+	p_publisher in varchar2,
+	p_price in number
+)
+as
+	cnt number;
+begin
+	select count(*) into cnt from book where bookname = p_bookname;
+	if cnt != 0 then
+		update book set price = p_price where bookname = p_bookname;
+	else
+		insert into book values(p_bookid, p_bookname, p_publisher, p_price);
+	end if;
+end;
+/
+
+
+
+exec BookInsertOrUpdate(14,'재미있는 자바', '비트',4000);
+exec BookInsertOrUpdate(14,'즐거운 oracle', '비트',20000);
+
+
+
+연습)도서번호,도서명,출판사,가격을 매개변수로 전달받아 
+만약에 동일한 도서번호가 있다면
+	도서명,출판사,가격을 변경하도록 하고 
+	그렇지 않으면 레코드를 추가하도록 합니다.
+	
+create or replace procedure BookInsertOrUpdate(
+	p_bookid in number,
+	p_bookname in varchar2,
+	p_publisher in varchar2,
+	p_price in number
+)
+as
+	cnt number;
+begin
+	select count(*) into cnt from book where bookid = p_bookid ;
+	if cnt != 0 then
+		update book set bookname = p_bookname,publisher=p_publisher , price = p_price where bookname = p_bookname;
+	else
+		insert into book values(p_bookid, p_bookname, p_publisher, p_price);
+	end if;
+end;
+/	
+
+
+
+
+
+
+
+
+
+
+
+
+연습) 도서의 평균 가격을 반환하는 프로시저
+create or replace procedure AveragePrice(
+	p_avg out number
+)
+as
+begin
+	select avg(price) into p_avg from book;
+end;
+/
+
+
+		
+	
+연습) 도서번호를 매개변수로 전달받아 
+		해당도서의 도서명과 가격을 반환하는 프로시저를 
+		정의하고 호출해 봅니다.
+		
+
+create or replace procedure bookinfo(
+	p_bookid in number,
+	p_bookname out varchar2,
+	p_price out number
+)				
+as
+begin
+	select bookname,price into p_bookname, p_price from book where bookid=p_bookid;
+end;
+/
+
+	
+	
+SQL> variable a varchar2(20)
+SQL> variable b number
+SQL> exec bookinfo(1,:a,:b)
+
+PL/SQL 처리가 정상적으로 완료되었습니다.
+
+SQL> print a
+
+A
+-------------------------------------------
+
+축구의 역사
+
+SQL> print b
+
+         B
+----------
+      7000
+
+SQL>
+
+	
+	
+	
+	
+		
+
+// 반환값이 있는 프로시저를 호출하기 위하여 다음과 같이 
+// 프로그래밍 해요
+// 반환값이 있으니 그 반환값을 출력해 보고 싶어요!
+// 프로시저가 반환값을 변수 어딘가에 담아야 할 거에요.
+
+declare		// 변수를 선언하겠습니다.
+		 p_bookname varchar2(50);	//프로시저가 책이름을 검색해서 담아줄 변수를 선언해요.
+	 	 p_price number;			//프로시저가 책가격을 검색해서 담아줄 변수
+begin								//plSql의 시작
+	bookinfo(1,p_bookname,p_price);					
+	//프로시저를 호출해요, 책번호가 1인 도서의 책이름을 p_bookname에 담아 주고
+	//가격은 p_price에 담아 주세요.
+	
+	dbms_output.put_line('책이름:'||p_bookname);
+	//프로시저가 구해준 책이름을 모니터에 출력해요.
+	
+	dbms_output.put_line('가격:'||p_price);
+	//프로시저가 구해준 가격을 모니터 출력해요
+	
+end;
+//프로그램을 종료합니다.
+
+
+SQL> /
+책이름:축구의 역사
+가격:7000
+
+PL/SQL 처리가 정상적으로 완료되었습니다.		
+		
+	
+dbms_output.put_line으로 출력하기 위해서는
+set serveroutput on을 설정해야 해요.
+이것을 콘솔창을 닫기 전까지 유효해요.
+그러나 콘솔창을 다시 열면 다시 설정해야 해요.
+
+
+		
+연습) 사원번호를 매개변수로 전달받아 
+			해당직원의 관리자이름을 
+			반환하는 프로시저를 만들고 호출해 봅니다.
+
+create or replace procedure getManager(
+	p_eno in number,
+	p_mname out varchar2
+)
+as
+begin
+	select m.ename into p_mname from emp e, emp m where e.mgr = m.eno and e.eno = p_eno;
+end;
+/
+
+
+			
+1002번 사원의 관리이름을 출력
+select m.ename from emp e, emp m where e.mgr = m.eno and e.eno = 1002;
+
+			
+			
+					
+연습) 부서명을 매개변수로 전달받아 
+		해당 부서의 평균급여와 직원수를 반환하는 프로시저를 
+		정의하고 호출해 봅니다.
+	
+create or replace procedure getDept(
+	p_dname in varchar2,
+	p_avg out number,
+	p_cnt out number	
+)
+as
+begin
+	select avg(sal), count(*) into p_avg, p_cnt from emp e, dept d where e.dno = d.dno and dname = p_dname;
+end;
+/
+	
+	
+SQL> variable p_avg number;
+SQL> variable p_cnt number;
+SQL> exec getDept('도토리',:p_avg,:p_cnt)
+
+PL/SQL 처리가 정상적으로 완료되었습니다.
+
+SQL> print p_avg
+
+     P_AVG
+----------
+416.326531
+
+SQL> print p_cnt
+
+     P_CNT
+----------
+         7
+
+SQL>
+	
+	
+	
+	
+	
+	
+		
+'도토리'부서의 평균급여와 직원수를 출력
+select avg(sal), count(*) from emp e, dept d where e.dno = d.dno and dname = '도토리';		
+		
+		
+		
+연습) 판매건수가 가장 많은 도서명과 출판사를 반환하는 프로시저를 
+		정의하고 호출해 봅니다.
+	
+도서번호별로 판매건수
+select bookid, count(*) from orders group by bookid order by count(*) desc;	
+	
+select bookid from (select bookid, count(*) from orders group by bookid order by count(*) desc ) where rownum <= 1;
+
+select bookname, publisher from book where 
+bookid = (select bookid from (select bookid, count(*) from orders group by bookid order by count(*) desc ) where rownum <= 1);
+	
+
+create or replace procedure getTop(
+	p_bookname out varchar2,
+	p_publisher out varchar2
+)
+as
+begin
+	select bookname, publisher into p_bookname, p_publisher from book where 
+bookid = (select bookid from (select bookid, count(*) from orders group by bookid order by count(*) desc ) where rownum <= 1);
+	
+end;
+/
+
+SQL> variable p_book varchar2(20);
+SQL> variable p_pub varchar2(20);
+SQL> exec getTop(:p_book,:p_pub)
+
+PL/SQL 처리가 정상적으로 완료되었습니다.
+
+SQL> print p_book
+
+P_BOOK
+----------------------------------------
+
+야구를 부탁해
+
+SQL> print p_pub
+
+P_PUB
+----------------------------------------
+
+이상미디어
+
+
+
+	
+		
+연습) 전화번호가 없는 고객의 수를 반환하는 
+		프로시저를 정의하고 호출해 봅니다.
+	
+create or replace procedure getCntPhoneNull(
+	cnt out number
+)
+as
+begin
+	select count(*) into cnt from customer where phone is null;
+end;
+/	
+
+SQL> variable cnt number;
+SQL> exec getCntPhoneNull(:cnt);
+
+PL/SQL 처리가 정상적으로 완료되었습니다.
+
+SQL> print cnt
+
+       CNT
+----------
+         1
+
+SQL>
+
+
+
+	
+select count(*) from customer where phone is null;				
+						
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		

@@ -1,0 +1,11 @@
+
+create table member(name varchar2(20) primary key, age number);
+
+create table goods(no number primary key, item varchar2(30), qty number,
+price number,
+fname varchar2(50),
+detail varchar2(1000));
+
+insert into goods values(1,'스타킹1',10,1500,'stock1.jpg','좋은스타킹');
+
+______________________________________________________________________________________

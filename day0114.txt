@@ -1,0 +1,808 @@
+연습) '서울'이나 '부산'에 근무하는 사람들의 
+			부서별 근무자의 수, 평균급여를 출력하세요
+select dname,count(*),avg(sal)
+	from dept d, emp e
+	where d.dno= e.dno and
+	dloc in ('서울','부산') group by dname;
+
+
+DNAME        COUNT(*)   AVG(SAL)
+---------- ---------- ----------
+총무부              1      20000
+출발개발팀          7 357.142857
+도토리              7 357.142857
+하기나름            5        380
+
+
+
+연습) '서울'이나 '부산'에 근무하는 사람들의 
+			근무자의 수, 평균급여를 출력하세요
+select count(*),avg(sal)
+	from dept d, emp e
+	where d.dno= e.dno and
+	dloc in ('서울','부산');
+				
+				
+  COUNT(*)   AVG(SAL)
+---------- ----------
+        20       1345				
+				
+
+** group by는 언제 사용하나요?
+===> 집계함수(sum,avg,max,min,count)를
+		특정 칼럼의 값의 종류별로 나타내고자 할 때 사용
+		(~~별로 총합)
+		(~~별로 평균)
+		(~~별로 개수)
+		
+		
+		
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+연습) '서울'이나 '부산'에 근무하는 사람들의 
+			부서별 근무자의 수, 평균급여를 출력하세요
+			단, 부서별 근무자의 수가 5명이상인 부서만 출력하세요.
+select dname,count(*),avg(sal)
+	from dept d, emp e
+	where d.dno= e.dno and
+	dloc in ('서울','부산') group by dname
+	having count(*) >= 5;
+
+
+<< having >>
+==> group by 절에 나타난 결과에 조건식을 적용
+
+
+DNAME        COUNT(*)   AVG(SAL)
+---------- ---------- ----------
+출발개발팀          7 357.142857
+도토리              7 357.142857
+하기나름            5        380
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+연습) 구매금액이 8000원 이상인 도서를 구매한 
+		고객별 총구매건수를 출력하세요.
+		
+select name,count(*) from 
+	customer c, orders o
+	where c.custid = o.custid and
+	saleprice >= 8000
+	group by name;			
+	
+	
+연습) 구매금액이 8000원 이상인 도서를 구매한 
+		고객별 총구매건수를 출력하세요.
+		단, 구매건수가 2건 이상인 고객만 출력하세요.
+select name,count(*) from 
+	customer c, orders o
+	where c.custid = o.custid and
+	saleprice >= 8000
+	group by name
+	having count(*) >= 2;		
+			
+=====================================================================
+
+<< 2개 이상의 테이블로 부터 자료 검색 >>
+
+select * from customer;					<---- 6
+select * from orders;					<---- 11
+select * from customer, orders;			<---- 66
+
+
+====> 두개이상의 테이블로 부터 
+		데이터를 검색하려면
+		조건식(조인식)을 표현해야 해요.
+		(두개의 테이블에 공통으로 들어가는 칼럼으로)		
+
+
+select * from customer, orders 
+	where customer.custid = orders.custid
+	order by customer.custid;
+
+	
+
+연습) 고객의 이름과 고객이 주문한 도서의 판매가격을 출력
+select name, saleprice from 
+	customer c, orders o
+	where c.custid = o.custid
+	order by name;
+
+
+
+
+
+
+연습) 고객별로 주문한 도서의 총판맥을 출력, 
+		고객별로 정렬
+		
+select name, sum(saleprice)
+	from customer c, orders o
+	where c.custid = o.custid 
+	group by name order by name;		
+
+
+
+
+
+연습) 부서별로 직원들의 평균급여를 출력
+		단, 부서명순으로 정렬
+select dname,avg(sal)
+	from dept d, emp e
+	where d.dno = e.dno
+	group by dname order by dname;		
+		
+DNAME        AVG(SAL)
+---------- ----------
+도토리     357.142857
+자바잡아   357.142857
+총무부          20000
+출발개발팀 357.142857
+하기나름          380
+
+
+연습) 고객의 이름과 고객이 주문한 도서의 이름을 출력
+select name,bookname 
+	from customer c, orders o, book b
+	where c.custid = o.custid and
+	b.bookid = o.bookid;
+
+
+
+연습) 모든 직원들의 
+		이름, 부서명을 출력합니다.
+		
+select ename,dname from 
+	dept d, emp e
+	where d.dno = e.dno;		
+
+
+
+<< 셀프조인 >>
+하나의 개체(테이블)에서 
+		어떤 속성이 자신의 주식별자를 참조하는 경우에 사용
+		
+사원테이블의 mgr은
+	사원테이블의 eno를 참조해요!
+	
+emp테이블(직원)의 관리자번호(mgr)은
+	emp테이블(관리자)의 사원번호(eno)를 참조해요!
+	
+	===> 물리적(실제로) 테이블은 하나밖에 없어요!
+			애칭을 주어 
+			하나는 "사원"이라고 보고			
+			하나는 "관리자"라고 설정하여 조인을 수행합니다.	
+			
+
+
+연습) 모든 직원들의 이름과 관리자이름을 출력
+	emp	e		직원
+	emp m		관리자
+	
+	select e.ename, m.ename
+		from emp e, emp m
+		where e.mgr  = m.eno ;
+
+
+
+
+연습) '박도형'직원의 관리자 이름을 출력
+	emp 관리자	m
+	emp 직원		e
+	
+	select m.ename 
+		from emp e, emp m
+		where e.mgr = m.eno and
+		e.ename = '박도형';
+
+
+연습) '이희재'의 부하직원을 모두 출력
+	emp	m		관리자
+	emp e		직원
+	
+	select e.ename from 
+		emp e, emp m
+		where e.mgr = m.eno and 
+		m.ename = '이희재';
+
+
+
+연습) 자신의 관리자 보다 입사일이 빠른 직원의 
+			이름, 관리자이름, 자신의 입사일, 관리자의 입사일을 출력
+	
+	emp	e		직원
+	emp	m		관리자
+	
+	select e.ename 직원명, m.ename 관리자명, e.hiredate 입사일, m.hiredate 관리자입사일
+		from emp e, emp m
+		where e.mgr = m.eno and
+		e.hiredate < m.hiredate;
+		
+
+column 직원명 format a10;
+column 관리자명 format a10;
+column 입사일 format a15;
+column 관리자입사일 format a15;
+
+
+			
+연습) 서울이나 부산에 근무하는 관리자별 총 부하직원의 수를 출력하세요.
+		단, 부하직원의 수가 3명이상인 관리자만 출력합니다.
+		관리자이름 순으로 출력합니다.			
+
+	emp		e		직원
+	emp		m		관리자
+	dept	d		부서
+	
+	select m.ename, count(*) 
+		from emp e, emp m, dept d
+		where e.mgr = m.eno and 
+		m.dno = d.dno
+		dloc in ('서울', '부산')
+		group by m.ename
+		having count(*) >= 3
+		order by m.ename; 
+	
+	
+
+연습) 도서의 가격이 20000원 도서를 구매한 
+		고객의 이름과 도서의 이름을 출력
+		
+select name,bookname
+	from book b, orders o, customer c
+	where b.bookid = o.bookid and 
+	c.custid = o.custid and
+	price = 20000;		
+
+
+연습) 고객의 이름과 고객이 주문한 도서의 가격 출력
+select name, saleprice 
+	from  orders o right outer join customer c
+	on c.custid = o.custid;
+	
+
+
+
+
+연습) 모든 직원의 이름과 관리자이름을 출력합니다.
+		(관리자가 없는 사람도 출력합니다.)
+		
+select e.ename 직원명, m.ename 관리자명
+	from emp e  left outer join  emp m
+	on e.mgr = m.eno; 
+
+
+select e.ename 직원명, m.ename 관리자명
+	from emp e ,  emp m
+	where e.mgr = m.eno(+); 
+
+
+연습) 직원명, 부서명을 출력하세요.
+		(부서명은 모두 나타내도록 하세요)
+		
+select ename, dname from 
+	emp e right outer join dept d
+	on e.dno = d.dno;
+
+
+select ename, dname from 
+	emp e, dept d
+	where e.dno(+) = d.dno;
+
+
+<< 서브쿼리 >>
+연습) 가장 비싼 도서의 도서명을 출력
+
+select bookname from book
+	where price = (select max(price) from book);
+	
+
+연습) 주문한 고객의 id를 출력
+select distinct custid from orders;
+
+
+연습) 주문한 고객의 이름 출력(서브쿼리)
+select name from customer
+	where custid = ( select distinct custid from orders );
+
+
+2행에 오류:
+ORA-01427: 단일 행 하위 질의에 2개 이상의 행이 리턴되었습니다.
+	
+===> 다중행 연산자
+		in, 
+		all, any, some		비교연산자  >= 	>	<	<=	
+		
+		
+		~~~ where age >= (서브쿼리)
+					만약에 서브쿼리가 건수가 여러건이라마면
+					   all >=   (서브쿼리)
+					   any >=   (서브쿼리)
+					   some >=   (서브쿼리)
+	
+
+연습) '대한미디어'출판사의 도서를 구매한 고객의 이름을 출력
+
+select name from customer
+	where custid in (select custid from orders 
+						where bookid in ( select bookid from 
+											book where publisher ='대한미디어'));
+
+
+
+
+
+
+연습) '서울'이나 '광주'에 근무하는 
+		사원들의 이름, 실수령액 출력하세요.
+		실수령액이 높은순으로 출력합니다.
+		(서브쿼리를 이용합니다.)
+select dno from dept where dloc in ('서울','광주');
+
+select ename,sal+comm from emp
+	where dno in (select dno from dept where dloc in ('서울','광주'));
+
+
+
+연습) 이근희의 부서명과 위치를 출력합니다.
+		(서브쿼리를 이용)
+		
+	select dno from emp where ename = '이근희';
+	
+	select dname,dloc from dept 
+		where dno = (select dno from emp where ename = '이근희');
+
+
+연습) 박지성이 구매한 도서의 
+		도서명, 출판사를 출력합니다.
+		(서브쿼리 이용)
+		
+		select custid from customer	where name = '박지성';
+		select bookid from orders 
+			where custid = (  select custid from customer	where name = '박지성' );
+		
+		select bookname, publisher
+			from book where bookid in (select bookid from orders 
+			where custid = (  select custid from customer	where name = '박지성' ));
+		
+연습) 주문하지 않는 고객의 이름
+		(서브쿼리 이용)		
+	
+	select distinct custid from orders;	
+		
+	select name from customer 
+		where custid not in (select distinct custid from orders);
+
+
+==========================================================================
+
+<< 서브쿼리 >>
+질의문 안에 포함되는 또 다른 질의문을 말한다.
+
+서브쿼리가 올 수 있는 곳
+	select 절
+	from 절
+	where 절
+	
+	
+연습) '서울'이나 '광주'에 근무하는 
+	사원들의 이름, 실수령액 출력하세요.
+	실수령액이 높은순으로 출력합니다.
+	(서브쿼리를 이용합니다.)
+		
+select ename,(select dname from dept d where d.dno = e.dno ) dname, sal+comm
+from emp e 
+where dno in (select dno from dept where dloc in ('서울','광주'))
+order by sal+comm desc;		
+			
+	
+	
+	
+	
+	
+	
+연습) 도서의 평균가격보다 비싼 도서명을 출력
+select avg(price) from book;
+
+AVG(PRICE)
+----------
+13409.0909
+
+select bookname,price from 
+	book where price > (select avg(price) from book);	
+	
+BOOKNAME                PRICE
+-------------------- --------
+축구의 이해            22,000
+골프바이블             35,000
+야구의 추억            20,000
+
+
+
+
+
+
+연습) 출판사별로 평균도서가격보다 
+	더 비싼 도서의 정보를 출력
+		
+select bookname from book b1 where 
+price > (select avg(price) from book b2 where b1.publisher = b2.publisher);		 
+
+
+
+연습) 주문하지 않는 고객의 이름
+select name from customer 
+minus
+select name from customer where custid in (select custid from orders);
+
+
+
+<< exists >>
+서브쿼리의 건수가 여러건일때 사용하는 다중행연산중의 하나입니다.
+서브쿼리의 건수가 하나라도 존재한다면 메인쿼리를 수행하라는 의미입니다.
+	
+
+연습) 주문이 있는 고객의 이름, 주소를 출력
+select name, address from customer c 
+where exists (select * from orders o where c.custid = o.custid);	
+	
+
+===============================================================================
+
+<< 데이터베이스 명령어 >>
+1. DDL(Data Definiation Language) 데이터정의어
+	데이터베이스를 생성하거나
+	구조를 변경하는 명령어
+
+2. DCL(Data Control Language) 데이터제어어
+	사용자 권한을 부여하거나
+	제거하는 명령어
+
+3. DML(Data Manufulation Language) 데이터조작어
+	데이터를 추가,수정,삭제
+	조회하는 명령어
+
+
+===============================================================================
+
+<< 제약(constraint)의 종류>>
+
+null			값을 생략할 수 있다
+not null			값을 생략할 수 없다
+unique			값이 유일해야 한다
+default			값을 생략하면 기본값을 적용한다
+check			조건식을 만족하는 값이어야 한다.
+primary key		값을 생략할 수 없고 유일해야 한다(not null + unique)
+foreign key		관계에 있는 부모객체의 주식별자에 나타난 값만 허용한다.
+
+create table member(
+id varchar2(20) primary key,
+pwd varchar2(20) not null,
+name varchar2(20) unique,
+age number check(age>=20)
+);
+
+insert into member values('tiger','tiger','이순신',30);
+insert into member values('hong','hong','홍길동',10);
+
+insert into member values('hong','hong','홍길동',10)
+*
+1행에 오류:
+ORA-02290: 체크 제약조건(C##MADANG.SYS_C009725)이 위배되었습니다
+
+______________________________________________________________________________________________
+
+create table member(
+	id varchar2(20) primary key,
+	pwd varchar2(20) not null,
+	name varchar2(20) unique,
+	age number default 20
+);
+
+insert into member values('tiger', '1234', '홍길동', default);
+insert into member(id,pwd) values('lee','lee1234');
+______________________________________________________________________________________________
+create table member(
+	id varchar2(20) primary key,
+	pwd varchar2(20) not null,
+	name varchar2(20)
+);
+
+
+insert into member values('tiger', 'tiger', '이순신');
+insert into member values('tiger', '1234', '홍길동');
+
+insert into member values('tiger', '1234', '홍길동')
+*
+1행에 오류:
+ORA-00001: 무결성 제약 조건(C##MADANG.SYS_C009720)에 위배됩니다
+		====> 개체무결성
+		====> 모든 튜플(레코드는) 주식별(pk)에 의해서 구별되어야 하는데
+				그렇지 않는 상황을 말합니다.
+
+
+insert into member values(null,'tiger','이순신');
+insert into member values(null,'tiger','이순신')
+                          *
+1행에 오류:
+ORA-01400: NULL을 ("C##MADANG"."MEMBER"."ID") 안에 삽입할 수 없습니다
+
+______________________________________________________________________________________________
+
+create table member(
+	id varchar2(20)  unique,
+	pwd varchar2(20) not null,
+	name varchar2(20) null
+);
+
+insert into member values(null,'tiger', '홍길동');
+
+insert into member values('tiger','tiger','홍길동');
+insert into member values('tiger','tiger','홍길동');
+
+*
+1행에 오류:
+ORA-00001: 무결성 제약 조건(C##MADANG.SYS_C009718)에 위배됩니다
+
+
+______________________________________________________________________________________________
+
+
+create table member(
+	id varchar2(20) not null,
+	pwd varchar2(20) not null,
+	name varchar2(20) null,
+	age number);
+
+insert into member values('tiger','1234','홍길동',20);
+insert into member values('lion','lion',null,null);
+insert into member(id,pwd,name) values('kim','kim','김유신');
+insert into member(name,pwd,id) values('이순신','1234','lee');
+insert into member(id,pwd) values('korea','1234'); 
+
+
+
+
+
+<< 테이블 구조의 변경 >>
+alter table 테이블명
+	add ~				새로운 칼럼 추가
+	drop ~				칼럼 삭제
+	modify 				칼럼 수정
+	
+	
+create table member(
+	id varchar2(20) primary key,
+	pwd varchar2(20),
+	name varchar2(20)
+);	
+
+alter table member add addr varchar2(20);
+alter table member drop column pwd;
+alter table member add age varchar2(20);
+alter table member modify age number;
+	====> 만약 테이블에 데이터가 있다면
+			수정하고자 하는 자료형으로 표현가능한 형태로 
+			변경한 후 수정해야 해요.
+			
+			
+<< 테이블의 삭제 >>
+	drop table 테이블명
+	
+
+<< emp 테이블의 레코드와 구조를 복사하여 
+		새로운 테이블 생성 >>
+
+create table 테이블명 
+	as select ~~~
+	
+
+emp테이블의 구조의 내용을 복사하여 emp100생성
+create table emp100 as select * from emp;	
+
+emp테이블의 구조만 복사하여 emp100생성
+create table emp100 as select * from emp where 1=2;		
+
+emp테이블의 부서번호가 100번인 레코드만 검색하여 
+	emp100테이블에 추가
+insert into emp100 select * from emp where dno=100;	
+
+
+
+	
+<< 자료의 수정 >>
+update 테이블명 set 컬럼1=값1, 칼럼2=값2, ....
+	where 조건식
+	
+	
+update customer set address = '대한민국 부산' where custid = 5;	
+
+
+연습) 박세리의 주소를 김연아의 주소와 동일하게 수정하세요.
+update customer set address = (select address from customer where name = '김연아')
+	where name = '박세리';
+
+
+<< 데이터의 삭제 >>
+delete from 테이블명 where 조건식
+
+연습) 고객번호가 5번인 고객을 삭제하시오.
+delete customer where custid = 5;
+
+commit			===> 	DML(insert, update, delete) 반영
+rollback		===>    DML(insert, update, delete) 취소
+
+	commit 취소는 없다
+
+________________________________________________________________________________________________
+
+
+연습문제) 1, 2, 3, 4	의 sql문을 작성하여 결과를 확인합니다.
+			동그라미 표시된 항목은 하지 않습니다.(수업때 다룬 내용입니다.)		
+
+
+3) 박지성의 총구매
+select sum(saleprice) from orders 
+where custid = (select custid from customer where name = '박지성');
+		
+		
+4) 박지성이 구매한 도서의 수
+select count(*) from orders 
+where custid = (select custid from customer where name = '박지성');
+	
+5) 박지성이 구매한 도서의 출판사의 수
+select count(distinct publisher) from book
+where bookid in (
+select bookid from orders 
+where custid = (select custid from customer where name = '박지성'));
+
+___________________________________________________________________________________________________
+	
+1) 마당서점 도서의 총 개수
+select count(*) from book;
+
+2) 마당서점에 도서를 출고하는 출판사의 총 개수
+select count(distinct publisher) from book;
+
+8) 주문하지 않는 고객의 이름(부속질의 사용)
+select name from customer 
+where cusid not in (select custid from orders);
+
+
+9) 주문 금액의 총액과 주문의 평균금액
+select sum(saleprice), avg(saleprice) from orders;
+
+
+10) 고객의 이름과 고객별 구매액
+select name, (select sum(saleprice) from orders o 
+where c.custid = o.custid) 구매액 from customer c;
+
+12) 도서의 가격과  판매가격의 차이가 가장 많은 주문
+		
+select * from orders where orderid = 
+(select orderid from orders o, book b
+where o.bookid = b.bookid		
+and price - saleprice = (select max(price-saleprice) from book b, orders o where b.bookid = o.bookid));	  
+
+
+13) 도서의 판매액 평균보다 자신의 구매액 평균이 더 높은 고객의 이름
+
+select avg(saleprice) from orders;
+	
+select custid, avg(saleprice) avg from orders group by custid;
+	
+select name from customer where 
+custid in (
+select custid from 
+(select custid, avg(saleprice) avg from orders group by custid ) 
+where avg > (select avg(saleprice) from orders));
+
+
+_________________________________________________________________________________________________
+
+
+1) 박지성이 구매한 도서의 출판사와 같은 출판사에서 도서를 구매한 고객의 이름
+	
+select name from customer where custid in 
+(select custid from orders where bookid in 
+(select bookid from book 
+where publisher in (select publisher from book
+where bookid in (select bookid from orders 
+where custid = (select custid from customer where name = '박지성'))))) and name != '박지성';
+	
+
+
+2) 두개이상의 서로 다른 출판사에서 도서를 구매한 고객의 이름
+
+select name from customer c,(select custid, count(distinct publisher) cnt 
+from orders o, book where 
+o.bookid = book.bookid group by custid 
+having count(distinct publisher) >= 2) a
+where c.custid = a.custid; 
+		
+
+3) 전체 고객의 30% 이상이 구매한 도서
+
+select bookid,count(*) cnt from orders group by bookid;	     도서별 주문건수
+select count(*)*0.3 from customer;			     전체고객의 30%
+	
+	
+select bookid from (select bookid,count(*) cnt from orders group by bookid) where 
+cnt >= (select count(*)*0.3 from customer);
+		 
+	
+select bookname from book 
+where bookid in ();
+		
+		
+select bookname from book 
+where bookid in (select bookid from (select bookid,count(*) cnt from orders group by bookid) where 
+cnt >= (select count(*)*0.3 from customer));	
+		
+
+
+
+_______________________________________________________________________________________________
+
+1) 새로운 도서('스포츠 세계', '대한미디어', 10000)이 
+	마당서점에 입고되었다. 삽입이 안 될 경우
+	필요한 데이터가 더 있는지 찾아 보시오.
+
+
+		
+2) '삼성당'에서 출판한 도서를 삭제하시오
+
+
+
+
+3) '이상미디어'에서 출판한 도서를 삭제하시오.
+	삭제안 안 되면 원인을 생각해 보시오.
+		
+
+
+		
+4) 출판사 '대한미디어'를 '대한출판사'로 이름을 바꾸시오.
+
+
+
+
+5) 테이블생성  출판사에 대한 정보를 저장하는 테이블
+	bookcompany(name,address,begin)을 생성하고자 한다. 
+	name은 pk이며 varchar2(20), address는 varchar2(20),
+	begin은 date으로 선언하여 생성하시오.
+		
+
+
+
+6) 테이블수정   bookcompany 테이블에 인터넷 주소를 저장하는 
+	webaddress를 속성을 varchar2(30)으로 추가하시오.
+		
+
+
+
+7) bookcompany 테이블의 임의의 튜플 name=한빛아카데미, 
+	address=서울시 마포구, begin=1993-01-01, 
+	webaddress=http://hanbit.co.kr를 삽입하시오.
+
+
+
